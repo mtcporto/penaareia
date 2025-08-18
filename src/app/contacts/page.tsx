@@ -88,12 +88,13 @@ export default function ContactsPage() {
   }
 
   const filteredContacts = useMemo(() => {
+    if (loading) return [];
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCompanyName(contact.companyId).toLowerCase().includes(searchTerm.toLowerCase())
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contacts, searchTerm, companies]);
+  }, [contacts, searchTerm, companies, loading]);
 
   return (
     <AppShell>
