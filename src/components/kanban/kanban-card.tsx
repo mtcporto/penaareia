@@ -85,11 +85,11 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
           <Button
             variant="ghost"
             size="icon"
-            className="text-accent-foreground/70 hover:text-accent-foreground hover:bg-accent/30 rounded-full"
+            className="text-primary hover:text-primary hover:bg-primary/10 rounded-full"
             onClick={() => setIsModalOpen(true)}
             aria-label="Sugestão de IA"
           >
-            <Lightbulb className="w-5 h-5 text-primary" />
+            <Lightbulb className="w-5 h-5" />
           </Button>
         </CardFooter>
       </Card>

@@ -93,16 +93,16 @@ export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalP
           )}
           {suggestion && (
             <div className="space-y-4 animate-in fade-in duration-500">
-               <div className="p-4 bg-secondary/50 rounded-lg">
+               <div className="p-4 bg-muted rounded-lg">
                  <h3 className="font-semibold flex items-center gap-2 mb-2 text-secondary-foreground">
-                   <Target className="w-5 h-5 text-accent" />
+                   <Target className="w-5 h-5 text-primary" />
                    Próxima Ação Sugerida
                  </h3>
                  <p className="text-muted-foreground">{suggestion.nextAction}</p>
                </div>
-               <div className="p-4 bg-secondary/50 rounded-lg">
+               <div className="p-4 bg-muted rounded-lg">
                  <h3 className="font-semibold flex items-center gap-2 mb-2 text-secondary-foreground">
-                   <Calendar className="w-5 h-5 text-accent" />
+                   <Calendar className="w-5 h-5 text-primary" />
                    Timing Ideal
                  </h3>
                  <p className="text-muted-foreground">{suggestion.timing}</p>
