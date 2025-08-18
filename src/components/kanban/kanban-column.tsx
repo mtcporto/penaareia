@@ -17,6 +17,8 @@ interface KanbanColumnProps {
   onDrop: (e: React.DragEvent<HTMLDivElement>, newStage: Stage) => void;
   handleDragStart: (e: React.DragEvent<HTMLDivElement>, dealId: string) => void;
   handleDragEnd: () => void;
+  onEdit: (deal: Deal) => void;
+  onDelete: (deal: Deal) => void;
 }
 
 export function KanbanColumn({
@@ -27,7 +29,9 @@ export function KanbanColumn({
   draggingDealId,
   onDrop,
   handleDragStart,
-  handleDragEnd
+  handleDragEnd,
+  onEdit,
+  onDelete
 }: KanbanColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -52,7 +56,7 @@ export function KanbanColumn({
     <div
       className="flex flex-col w-72 lg:w-80 shrink-0 h-full"
     >
-       <div className="p-4 flex justify-between items-center border-b">
+       <div className="p-4 flex justify-between items-center border-b sticky top-0 bg-background z-10">
         <h2 className="font-bold text-lg text-secondary-foreground">{STAGE_TITLES[stage]}</h2>
         <Badge variant="secondary" className="text-sm">{deals.length}</Badge>
       </div>
@@ -76,6 +80,8 @@ export function KanbanColumn({
                 isDragging={draggingDealId === deal.id}
                 handleDragStart={handleDragStart}
                 handleDragEnd={handleDragEnd}
+                onEdit={onEdit}
+                onDelete={onDelete}
               />
             ))}
             {deals.length === 0 && (

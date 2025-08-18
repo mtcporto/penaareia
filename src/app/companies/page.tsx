@@ -14,10 +14,43 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
+import { CompanyForm } from './company-form';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>(mockCompanies);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleSave = (companyData: Company) => {
+    if (selectedCompany) {
+      setCompanies(companies.map(c => c.id === companyData.id ? companyData : c));
+    } else {
+      setCompanies([...companies, { ...companyData, id: `c${Date.now()}` }]);
+    }
+    setIsFormOpen(false);
+    setSelectedCompany(null);
+  };
+
+  const handleDelete = () => {
+    if (selectedCompany) {
+      setCompanies(companies.filter(c => c.id !== selectedCompany.id));
+      setIsDeleteDialogOpen(false);
+      setSelectedCompany(null);
+    }
+  };
+
+  const openForm = (company: Company | null = null) => {
+    setSelectedCompany(company);
+    setIsFormOpen(true);
+  };
+  
+  const openDeleteDialog = (company: Company) => {
+    setSelectedCompany(company);
+    setIsDeleteDialogOpen(true);
+  }
 
   const filteredCompanies = useMemo(() => {
     return companies.filter(company =>
@@ -37,7 +70,7 @@ export default function CompaniesPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button>
+        <Button onClick={() => openForm()}>
           <PlusCircle className="mr-2 h-5 w-5" />
           Nova Empresa
         </Button>
@@ -67,10 +100,10 @@ export default function CompaniesPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(company)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(company)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -87,6 +120,30 @@ export default function CompaniesPage() {
           </TableBody>
         </Table>
       </div>
+      
+      {isFormOpen && (
+        <CompanyForm 
+            company={selectedCompany} 
+            onSave={handleSave}
+            onCancel={() => {
+                setIsFormOpen(false);
+                setSelectedCompany(null);
+            }}
+        />
+       )}
+
+       {isDeleteDialogOpen && (
+        <DeleteConfirmationDialog
+            title="Excluir Empresa"
+            description={`Tem certeza que deseja excluir a empresa "${selectedCompany?.name}"? Esta ação não pode ser desfeita.`}
+            onConfirm={handleDelete}
+            onCancel={() => {
+                setIsDeleteDialogOpen(false);
+                setSelectedCompany(null);
+            }}
+        />
+       )}
+
     </div>
   );
 }

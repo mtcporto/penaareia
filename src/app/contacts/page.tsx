@@ -14,13 +14,46 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
+import { ContactForm } from './contact-form';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>(mockContacts);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const getCompanyName = (companyId: string) => {
     return mockCompanies.find(c => c.id === companyId)?.name || 'N/A';
+  }
+
+  const handleSave = (contactData: Contact) => {
+    if (selectedContact) {
+      setContacts(contacts.map(c => c.id === contactData.id ? contactData : c));
+    } else {
+      setContacts([...contacts, { ...contactData, id: `contact${Date.now()}` }]);
+    }
+    setIsFormOpen(false);
+    setSelectedContact(null);
+  };
+  
+  const handleDelete = () => {
+    if (selectedContact) {
+      setContacts(contacts.filter(c => c.id !== selectedContact.id));
+      setIsDeleteDialogOpen(false);
+      setSelectedContact(null);
+    }
+  };
+
+  const openForm = (contact: Contact | null = null) => {
+    setSelectedContact(contact);
+    setIsFormOpen(true);
+  };
+  
+  const openDeleteDialog = (contact: Contact) => {
+    setSelectedContact(contact);
+    setIsDeleteDialogOpen(true);
   }
 
   const filteredContacts = useMemo(() => {
@@ -28,7 +61,7 @@ export default function ContactsPage() {
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCompanyName(contact.companyId).toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [contacts, searchTerm]);
+  }, [contacts, searchTerm, getCompanyName]);
 
   return (
     <div>
@@ -42,7 +75,7 @@ export default function ContactsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button>
+        <Button onClick={() => openForm()}>
           <PlusCircle className="mr-2 h-5 w-5" />
           Novo Contato
         </Button>
@@ -68,10 +101,10 @@ export default function ContactsPage() {
                 <TableCell>{contact.phone}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(contact)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(contact)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -88,6 +121,30 @@ export default function ContactsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {isFormOpen && (
+        <ContactForm
+            contact={selectedContact} 
+            onSave={handleSave}
+            onCancel={() => {
+                setIsFormOpen(false);
+                setSelectedContact(null);
+            }}
+        />
+       )}
+
+       {isDeleteDialogOpen && (
+        <DeleteConfirmationDialog
+            title="Excluir Contato"
+            description={`Tem certeza que deseja excluir o contato "${selectedContact?.name}"? Esta ação não pode ser desfeita.`}
+            onConfirm={handleDelete}
+            onCancel={() => {
+                setIsDeleteDialogOpen(false);
+                setSelectedContact(null);
+            }}
+        />
+       )}
+
     </div>
   );
 }
