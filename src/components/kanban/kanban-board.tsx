@@ -90,15 +90,15 @@ export function KanbanBoard() {
   };
 
   return (
-    <>
-      <div className="flex justify-end mb-4">
+    <div className="flex flex-col h-full">
+      <div className="flex justify-end mb-4 shrink-0">
         <Button onClick={() => openForm()}>
           <PlusCircle className="mr-2 h-5 w-5" />
           Novo Negócio
         </Button>
       </div>
       <div className="flex-1 overflow-x-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 min-w-max h-full">
+        <div className="grid grid-flow-col auto-cols-max gap-6 h-full">
           {STAGES.map(stage => (
             <KanbanColumn
               key={stage}
@@ -140,6 +140,6 @@ export function KanbanBoard() {
             }}
         />
        )}
-    </>
+    </div>
   );
 }

@@ -54,9 +54,9 @@ export function KanbanColumn({
 
   return (
     <div
-      className="flex flex-col w-72 lg:w-80 shrink-0 h-full"
+      className="flex flex-col w-72 lg:w-80 shrink-0 h-full bg-muted/40 rounded-lg"
     >
-       <div className="p-4 flex justify-between items-center border-b sticky top-0 bg-background z-10">
+       <div className="p-4 flex justify-between items-center border-b sticky top-0 bg-background z-10 rounded-t-lg">
         <h2 className="font-bold text-lg text-secondary-foreground">{STAGE_TITLES[stage]}</h2>
         <Badge variant="secondary" className="text-sm">{deals.length}</Badge>
       </div>
@@ -65,8 +65,8 @@ export function KanbanColumn({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={cn(
-          'flex-1 bg-secondary/50 rounded-lg transition-colors duration-300',
-          isDragOver && 'bg-accent/20'
+          'flex-1 rounded-b-lg transition-colors duration-300',
+          isDragOver && 'bg-primary/10'
         )}
       >
         <ScrollArea className="h-full">
