@@ -42,6 +42,7 @@ export default function DealDetailPage() {
 
   const fetchDealData = useCallback(async () => {
     setLoading(true);
+    if (!dealId) return;
     const foundDeal = await getDeal(dealId);
     if (foundDeal) {
       setDeal(foundDeal);
@@ -56,7 +57,7 @@ export default function DealDetailPage() {
       setContact(contactData);
       setProduct(productData);
       setTasks(tasksData);
-      setNotes(notesData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      setNotes(notesData.sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()));
     }
     setLoading(false);
   }, [dealId]);
@@ -130,7 +131,7 @@ export default function DealDetailPage() {
   }
   
   // Note Handlers
-  const handleSaveNote = async (noteData: Omit<Note, 'id'>) => {
+  const handleSaveNote = async (noteData: Omit<Note, 'id' | 'createdAt'>) => {
      try {
         if (selectedNote && selectedNote.id) {
             await updateNote(dealId, selectedNote.id, noteData);

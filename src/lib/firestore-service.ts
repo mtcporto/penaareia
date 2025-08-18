@@ -37,7 +37,7 @@ const addDocument = async <T extends { id?: string }>(collectionName: string, da
   return { ...data, id: docRef.id } as T;
 };
 
-const updateDocument = async <T extends { id: string }>(collectionName: string, id: string, data: Partial<Omit<T, 'id'>>): Promise<void> => {
+const updateDocument = async <T extends { id?: string }>(collectionName: string, id: string, data: Partial<Omit<T, 'id'>>): Promise<void> => {
   await updateDoc(doc(db, collectionName, id), data);
 };
 
@@ -48,11 +48,13 @@ const deleteDocument = async (collectionName: string, id: string): Promise<void>
 
 // Specific Functions
 export const getCompanies = () => getCollection<Company>('companies');
+export const getCompany = (id: string) => getDocument<Company>('companies', id);
 export const addCompany = (data: Omit<Company, 'id'>) => addDocument<Company>('companies', data);
 export const updateCompany = (id: string, data: Partial<Company>) => updateDocument<Company>('companies', id, data);
 export const deleteCompany = (id: string) => deleteDocument('companies', id);
 
 export const getContacts = () => getCollection<Contact>('contacts');
+export const getContact = (id: string) => getDocument<Contact>('contacts', id);
 export const getContactsByCompany = async (companyId: string): Promise<Contact[]> => {
     const q = query(collection(db, 'contacts'), where('companyId', '==', companyId));
     const snapshot = await getDocs(q);
@@ -63,6 +65,7 @@ export const updateContact = (id: string, data: Partial<Contact>) => updateDocum
 export const deleteContact = (id: string) => deleteDocument('contacts', id);
 
 export const getProducts = () => getCollection<Product>('products');
+export const getProduct = (id: string) => getDocument<Product>('products', id);
 export const addProduct = (data: Omit<Product, 'id'>) => addDocument<Product>('products', data);
 export const updateProduct = (id: string, data: Partial<Product>) => updateDocument<Product>('products', id, data);
 export const deleteProduct = (id: string) => deleteDocument('products', id);
@@ -131,12 +134,12 @@ export const seedDatabase = async () => {
             const dealDocRef = doc(db, 'deals', deal.id);
             batch.set(dealDocRef, dealData);
             
-            tasks.forEach(task => {
+            tasks?.forEach(task => {
                 const taskDocRef = doc(db, `deals/${deal.id}/tasks`, task.id);
                 batch.set(taskDocRef, task);
             });
 
-            notes.forEach(note => {
+            notes?.forEach(note => {
                 const noteDocRef = doc(db, `deals/${deal.id}/notes`, note.id);
                 batch.set(noteDocRef, note);
             });
