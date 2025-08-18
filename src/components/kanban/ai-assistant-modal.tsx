@@ -16,6 +16,7 @@ import { suggestNextAction, type SuggestNextActionOutput } from '@/ai/flows/sugg
 import type { Deal } from '@/types';
 import { Lightbulb, AlertTriangle, Calendar, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { mockProducts } from '@/data/mock-data';
 
 interface AIAssistantModalProps {
   deal: Deal;
@@ -28,6 +29,7 @@ export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalP
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const product = mockProducts.find(p => p.id === deal.productId);
 
   useEffect(() => {
     if (open) {
@@ -39,7 +41,7 @@ export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalP
           const input = {
             stage: deal.stage,
             contactHistory: deal.contactHistory.join('\\n'),
-            dealDetails: `Produto: ${deal.product}. Valor: ${deal.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}. Título: ${deal.title}`,
+            dealDetails: `Produto: ${product?.name}. Valor: ${deal.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}. Título: ${deal.title}`,
           };
           const result = await suggestNextAction(input);
           setSuggestion(result);
@@ -58,7 +60,7 @@ export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalP
       };
       getSuggestion();
     }
-  }, [open, deal, toast]);
+  }, [open, deal, toast, product]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

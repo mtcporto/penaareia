@@ -1,17 +1,25 @@
-import type { Company, Contact, Deal } from '@/types';
+import type { Company, Contact, Deal, Product } from '@/types';
 
 export const mockCompanies: Company[] = [
-  { id: '1', name: 'Construtora Sol Nascente' },
-  { id: '2', name: 'Parceiros Litorâneos' },
-  { id: '3', name: 'Imóveis de Luxo SA' },
+  { id: '1', name: 'Construtora Sol Nascente', email: 'contato@solnascente.com', phone: '(11) 98765-4321', website: 'solnascente.com' },
+  { id: '2', name: 'Parceiros Litorâneos', email: 'parceria@litoraneos.com', phone: '(21) 91234-5678', website: 'litoraneos.com' },
+  { id: '3', name: 'Imóveis de Luxo SA', email: 'vendas@luxoimoveis.com', phone: '(31) 99999-8888', website: 'luxoimoveis.com' },
 ];
 
 export const mockContacts: Contact[] = [
-  { id: 'c1', name: 'João Silva', companyId: '1' },
-  { id: 'c2', name: 'Maria Oliveira', companyId: '1' },
-  { id: 'c3', name: 'Carlos Pereira', companyId: '2' },
-  { id: 'c4', name: 'Ana Costa', companyId: '3' },
-  { id: 'c5', name: 'Pedro Martins', companyId: '2' },
+  { id: 'c1', name: 'João Silva', companyId: '1', email: 'joao.silva@solnascente.com', phone: '(11) 98765-1111' },
+  { id: 'c2', name: 'Maria Oliveira', companyId: '1', email: 'maria.oliveira@solnascente.com', phone: '(11) 98765-2222' },
+  { id: 'c3', name: 'Carlos Pereira', companyId: '2', email: 'carlos.pereira@litoraneos.com', phone: '(21) 91234-3333' },
+  { id: 'c4', name: 'Ana Costa', companyId: '3', email: 'ana.costa@luxoimoveis.com', phone: '(31) 99999-4444' },
+  { id: 'c5', name: 'Pedro Martins', companyId: '2', email: 'pedro.martins@litoraneos.com', phone: '(21) 91234-5555' },
+];
+
+export const mockProducts: Product[] = [
+    { id: 'p1', name: 'Apartamento Vista Mar', price: 450000, description: '2 quartos, 1 suíte, varanda com vista para o mar.' },
+    { id: 'p2', name: 'Cobertura Duplex', price: 1200000, description: '4 suítes, piscina privativa, 3 vagas de garagem.' },
+    { id: 'p3', name: 'Casa Térrea com Piscina', price: 300000, description: '3 quartos, área gourmet com churrasqueira.' },
+    { id: 'p4', name: 'Apartamento 3 Suítes', price: 750000, description: 'Alto padrão, 2 vagas, lazer completo.' },
+    { id: 'p5', name: 'Aluguel Temporada', price: 5000, description: 'Casa mobiliada para temporada.' },
 ];
 
 export const mockDeals: Deal[] = [
@@ -22,8 +30,8 @@ export const mockDeals: Deal[] = [
     contactId: 'c1',
     value: 450000,
     stage: 'Proposta enviada',
+    productId: 'p1',
     contactHistory: ['Reunião inicial em 10/05/2024.', 'E-mail com proposta enviado em 15/05/2024.'],
-    product: 'Apartamento Vista Mar'
   },
   {
     id: 'd2',
@@ -32,8 +40,8 @@ export const mockDeals: Deal[] = [
     contactId: 'c4',
     value: 1200000,
     stage: 'Interesse identificado',
+    productId: 'p2',
     contactHistory: ['Contato via telefone em 12/05/2024.', 'Agendada visita para 20/05/2024.'],
-    product: 'Cobertura Duplex'
   },
   {
     id: 'd3',
@@ -42,8 +50,8 @@ export const mockDeals: Deal[] = [
     contactId: 'c3',
     value: 300000,
     stage: 'Sem contato',
+    productId: 'p3',
     contactHistory: ['Lead recebido via formulário do site em 18/05/2024.'],
-    product: 'Casa Térrea com Piscina'
   },
   {
     id: 'd4',
@@ -52,8 +60,8 @@ export const mockDeals: Deal[] = [
     contactId: 'c2',
     value: 750000,
     stage: 'Contato feito',
+    productId: 'p4',
     contactHistory: ['Primeiro contato por e-mail em 17/05/2024.'],
-    product: 'Apartamento 3 Suítes'
   },
   {
     id: 'd5',
@@ -62,7 +70,7 @@ export const mockDeals: Deal[] = [
     contactId: 'c5',
     value: 5000,
     stage: 'Fechamento',
+    productId: 'p5',
     contactHistory: ['Contrato assinado em 01/05/2024.'],
-    product: 'Aluguel Temporada'
   }
 ];

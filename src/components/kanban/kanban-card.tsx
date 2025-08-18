@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-import type { Deal, Company, Contact } from '@/types';
+import type { Deal, Company, Contact, Product } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Building2, User } from 'lucide-react';
+import { Lightbulb, Building2, User, Package } from 'lucide-react';
 import { AIAssistantModal } from './ai-assistant-modal';
 import { cn } from '@/lib/utils';
+import { mockProducts } from '@/data/mock-data';
 
 interface KanbanCardProps {
   deal: Deal;
@@ -20,6 +21,7 @@ interface KanbanCardProps {
 
 export function KanbanCard({ deal, company, contact, isDragging, handleDragStart, handleDragEnd }: KanbanCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const product = mockProducts.find(p => p.id === deal.productId);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -50,6 +52,10 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
           <div className="flex items-center text-muted-foreground">
             <Building2 className="w-4 h-4 mr-2 shrink-0" />
             <span>{company?.name || 'Empresa não encontrada'}</span>
+          </div>
+           <div className="flex items-center text-muted-foreground">
+            <Package className="w-4 h-4 mr-2 shrink-0" />
+            <span>{product?.name || 'Produto não encontrado'}</span>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center">

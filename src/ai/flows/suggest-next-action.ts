@@ -18,7 +18,7 @@ const SuggestNextActionInputSchema = z.object({
   contactHistory: z
     .string()
     .describe('The history of communications with the contact.'),
-  dealDetails: z.string().describe('Details about the deal.'),
+  dealDetails: z.string().describe('Details about the deal, including the product and value.'),
 });
 export type SuggestNextActionInput = z.infer<typeof SuggestNextActionInputSchema>;
 
@@ -51,7 +51,7 @@ Contact History: {{{contactHistory}}}
 Deal Details: {{{dealDetails}}}
 
 Suggest the next action and optimal timing:
-`, // Ensure the prompt ends with a newline character for better formatting
+`,
 });
 
 const suggestNextActionFlow = ai.defineFlow(
