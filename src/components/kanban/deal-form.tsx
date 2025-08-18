@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from 'react-hook-form';
@@ -17,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import type { Deal, Company, Contact, Product, Stage } from '@/types';
 import { STAGES } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import { getContactsByCompany } from '@/lib/firestore-service';
 
 const dealSchema = z.object({
   title: z.string().min(1, { message: "O título é obrigatório." }),
@@ -54,17 +57,36 @@ export function DealForm({ deal, onSave, onCancel, companies, contacts, products
     },
   });
 
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const companyId = form.watch('companyId');
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+        if(companyId) {
+            const companyContacts = await getContactsByCompany(companyId);
+            setFilteredContacts(companyContacts);
+        } else {
+            setFilteredContacts([]);
+        }
+    }
+    fetchContacts();
+  }, [companyId])
+  
+  useEffect(() => {
+    // If we are editing a deal, we need to pre-populate the contacts for the selected company
+    if (deal?.companyId) {
+        getContactsByCompany(deal.companyId).then(setFilteredContacts);
+    }
+  }, [deal])
+
+
   const onSubmit = (data: DealFormValues) => {
-    // We need to pass the full deal object, including non-form fields
     const fullDealData: Deal = {
-        ...(deal || { id: '', contactHistory: [] }), // Keep existing id and history or initialize
+        ...(deal || { id: '', contactHistory: [] }), 
         ...data,
     };
     onSave(fullDealData);
   };
-
-  const companyId = form.watch('companyId');
-  const filteredContacts = contacts.filter(c => c.companyId === companyId);
 
   return (
     <Dialog open onOpenChange={onCancel}>
@@ -109,7 +131,7 @@ export function DealForm({ deal, onSave, onCancel, companies, contacts, products
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Empresa</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={(value) => { field.onChange(value); form.setValue('contactId', ''); }} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma empresa" />

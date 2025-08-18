@@ -1,8 +1,7 @@
 
 "use client"
 
-import { useState, useMemo } from 'react';
-import { mockProducts } from '@/data/mock-data';
+import { useState, useMemo, useEffect } from 'react';
 import type { Product } from '@/types';
 import {
   Table,
@@ -18,29 +17,57 @@ import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 import { ProductForm } from './product-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { AppShell } from '@/components/app-shell';
+import { getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/firestore-service';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  const handleSave = (productData: Product) => {
-    if (selectedProduct) {
-      setProducts(products.map(p => p.id === productData.id ? productData : p));
-    } else {
-      setProducts([...products, { ...productData, id: `p${Date.now()}` }]);
+  useEffect(() => {
+    fetchProducts();
+  }, [])
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    const data = await getProducts();
+    setProducts(data);
+    setLoading(false);
+  }
+
+  const handleSave = async (productData: Product) => {
+    try {
+        if (selectedProduct && selectedProduct.id) {
+            await updateProduct(selectedProduct.id, productData);
+            toast({ title: "Sucesso", description: "Produto atualizado." });
+        } else {
+            await addProduct(productData);
+            toast({ title: "Sucesso", description: "Produto criado." });
+        }
+        fetchProducts();
+        setIsFormOpen(false);
+        setSelectedProduct(null);
+    } catch (error) {
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar o produto." });
     }
-    setIsFormOpen(false);
-    setSelectedProduct(null);
   };
   
-  const handleDelete = () => {
-    if (selectedProduct) {
-      setProducts(products.filter(p => p.id !== selectedProduct.id));
-      setIsDeleteDialogOpen(false);
-      setSelectedProduct(null);
+  const handleDelete = async () => {
+    if (selectedProduct && selectedProduct.id) {
+      try {
+        await deleteProduct(selectedProduct.id);
+        toast({ title: "Sucesso", description: "Produto excluído." });
+        fetchProducts();
+        setIsDeleteDialogOpen(false);
+        setSelectedProduct(null);
+      } catch (error) {
+         toast({ variant: "destructive", title: "Erro", description: "Não foi possível excluir o produto." });
+      }
     }
   };
 
@@ -96,30 +123,37 @@ export default function ProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProducts.map(product => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.description}</TableCell>
-                <TableCell>{formatCurrency(product.price)}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(product)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(product)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-             {filteredProducts.length === 0 && (
+            {loading ? (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                        Carregando...
+                    </TableCell>
+                </TableRow>
+            ) : filteredProducts.length > 0 ? (
+                filteredProducts.map(product => (
+                <TableRow key={product.id}>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.description}</TableCell>
+                    <TableCell>{formatCurrency(product.price)}</TableCell>
+                    <TableCell>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(product)}>
+                        <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(product)}>
+                        <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    </TableCell>
+                </TableRow>
+                ))
+            ) : (
                 <TableRow>
                     <TableCell colSpan={4} className="h-24 text-center">
                     Nenhum produto encontrado.
                     </TableCell>
                 </TableRow>
-             )}
+            )}
           </TableBody>
         </Table>
       </div>
@@ -133,10 +167,10 @@ export default function ProductsPage() {
                 }}
             />
         )}
-        {isDeleteDialogOpen && (
+        {isDeleteDialogOpen && selectedProduct && (
             <DeleteConfirmationDialog
                 title="Excluir Produto"
-                description={`Tem certeza que deseja excluir o produto "${selectedProduct?.name}"? Esta ação não pode ser desfeita.`}
+                description={`Tem certeza que deseja excluir o produto "${selectedProduct.name}"? Esta ação não pode ser desfeita.`}
                 onConfirm={handleDelete}
                 onCancel={() => {
                     setIsDeleteDialogOpen(false);

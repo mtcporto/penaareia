@@ -1,3 +1,6 @@
+
+import type { Timestamp } from 'firebase/firestore';
+
 export type Stage =
   | 'Sem contato'
   | 'Contato feito'
@@ -31,14 +34,14 @@ export interface Product {
 export interface Task {
     id: string;
     description: string;
-    dueDate?: string;
+    dueDate?: string | Date | Timestamp;
     completed: boolean;
 }
 
 export interface Note {
     id: string;
     content: string;
-    createdAt: string;
+    createdAt: string | Date | Timestamp;
 }
 
 export interface Deal {
@@ -50,6 +53,6 @@ export interface Deal {
   stage: Stage;
   productId: string;
   contactHistory: string[];
-  tasks: Task[];
-  notes: Note[];
+  tasks?: Task[]; // These are subcollections now
+  notes?: Note[]; // These are subcollections now
 }

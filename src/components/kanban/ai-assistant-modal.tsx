@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,23 +14,22 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { suggestNextAction, type SuggestNextActionOutput } from '@/ai/flows/suggest-next-action';
-import type { Deal } from '@/types';
+import type { Deal, Product } from '@/types';
 import { Lightbulb, AlertTriangle, Calendar, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { mockProducts } from '@/data/mock-data';
 
 interface AIAssistantModalProps {
   deal: Deal;
+  product: Product | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalProps) {
+export function AIAssistantModal({ deal, product, open, onOpenChange }: AIAssistantModalProps) {
   const [suggestion, setSuggestion] = useState<SuggestNextActionOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const product = mockProducts.find(p => p.id === deal.productId);
 
   useEffect(() => {
     if (open) {
@@ -40,7 +40,7 @@ export function AIAssistantModal({ deal, open, onOpenChange }: AIAssistantModalP
         try {
           const input = {
             stage: deal.stage,
-            contactHistory: deal.contactHistory.join('\\n'),
+            contactHistory: (deal.contactHistory || []).join('\\n'),
             dealDetails: `Produto: ${product?.name}. Valor: ${deal.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}. Título: ${deal.title}`,
           };
           const result = await suggestNextAction(input);

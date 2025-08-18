@@ -1,16 +1,17 @@
+
 "use client";
 
-import { useState } from 'react';
-import type { Deal, Company, Contact } from '@/types';
+import { useState, useEffect } from 'react';
+import type { Deal, Company, Contact, Product } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb, Building2, User, Package, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { AIAssistantModal } from './ai-assistant-modal';
 import { cn } from '@/lib/utils';
-import { mockProducts } from '@/data/mock-data';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
+import { getProducts } from '@/lib/firestore-service';
 
 interface KanbanCardProps {
   deal: Deal;
@@ -25,8 +26,20 @@ interface KanbanCardProps {
 
 export function KanbanCard({ deal, company, contact, isDragging, handleDragStart, handleDragEnd, onEdit, onDelete }: KanbanCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
   const router = useRouter();
-  const product = mockProducts.find(p => p.id === deal.productId);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+        if(deal.productId) {
+            // This is not ideal to fetch one by one, but for this case it's fine
+            // A better approach would be to have products in a context or passed down
+            const allProducts = await getProducts();
+            setProduct(allProducts.find(p => p.id === deal.productId) || null);
+        }
+    }
+    fetchProduct();
+  }, [deal.productId])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -64,11 +77,11 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(deal)}>
+              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); onEdit(deal);}}>
                 <Edit className="mr-2 h-4 w-4" />
                 <span>Editar</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(deal)} className="text-destructive">
+              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); onDelete(deal);}} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 <span>Excluir</span>
               </DropdownMenuItem>
@@ -107,6 +120,7 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
       {isModalOpen && (
         <AIAssistantModal
           deal={deal}
+          product={product}
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
         />

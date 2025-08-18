@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from 'react-hook-form';
@@ -15,8 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { Contact } from '@/types';
-import { mockCompanies } from '@/data/mock-data';
+import type { Contact, Company } from '@/types';
 
 const contactSchema = z.object({
   name: z.string().min(1, { message: "O nome é obrigatório." }),
@@ -29,11 +29,12 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 interface ContactFormProps {
   contact: Contact | null;
+  companies: Company[];
   onSave: (contactData: Contact) => void;
   onCancel: () => void;
 }
 
-export function ContactForm({ contact, onSave, onCancel }: ContactFormProps) {
+export function ContactForm({ contact, companies, onSave, onCancel }: ContactFormProps) {
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
@@ -85,7 +86,7 @@ export function ContactForm({ contact, onSave, onCancel }: ContactFormProps) {
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {mockCompanies.map((company) => (
+                        {companies.map((company) => (
                             <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
                         ))}
                         </SelectContent>

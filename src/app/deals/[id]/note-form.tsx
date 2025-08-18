@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from 'react-hook-form';
@@ -24,7 +25,7 @@ type NoteFormValues = z.infer<typeof noteSchema>;
 
 interface NoteFormProps {
   note: Note | null;
-  onSave: (noteData: Note) => void;
+  onSave: (noteData: Omit<Note, 'id' | 'createdAt'>) => void;
   onCancel: () => void;
 }
 
@@ -37,11 +38,7 @@ export function NoteForm({ note, onSave, onCancel }: NoteFormProps) {
   });
 
   const onSubmit = (data: NoteFormValues) => {
-    onSave({ 
-        ...data, 
-        id: note?.id || '',
-        createdAt: note?.createdAt || new Date().toISOString()
-    });
+    onSave(data);
   };
 
   return (

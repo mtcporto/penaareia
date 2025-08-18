@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from 'react-hook-form';
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import type { Task } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { Timestamp } from 'firebase/firestore';
 
 const taskSchema = z.object({
   description: z.string().min(1, { message: "A descrição é obrigatória." }),
@@ -32,8 +34,16 @@ type TaskFormValues = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
   task: Task | null;
-  onSave: (taskData: Task) => void;
+  onSave: (taskData: Omit<Task, 'id'>) => void;
   onCancel: () => void;
+}
+
+const getDateFromTimestamp = (date: Task['dueDate']): Date | undefined => {
+    if (!date) return undefined;
+    if ((date as Timestamp).toDate) {
+        return (date as Timestamp).toDate();
+    }
+    return new Date(date as string | Date);
 }
 
 export function TaskForm({ task, onSave, onCancel }: TaskFormProps) {
@@ -41,17 +51,13 @@ export function TaskForm({ task, onSave, onCancel }: TaskFormProps) {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       description: task?.description || '',
-      dueDate: task?.dueDate ? new Date(task.dueDate) : undefined,
+      dueDate: getDateFromTimestamp(task?.dueDate),
       completed: task?.completed || false,
     },
   });
 
   const onSubmit = (data: TaskFormValues) => {
-    onSave({ 
-        ...data, 
-        id: task?.id || '',
-        dueDate: data.dueDate?.toISOString()
-    });
+    onSave(data);
   };
 
   return (

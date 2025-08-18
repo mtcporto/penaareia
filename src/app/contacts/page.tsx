@@ -1,9 +1,8 @@
 
 "use client"
 
-import { useState, useMemo } from 'react';
-import { mockContacts, mockCompanies } from '@/data/mock-data';
-import type { Contact } from '@/types';
+import { useState, useMemo, useEffect } from 'react';
+import type { Contact, Company } from '@/types';
 import {
   Table,
   TableHeader,
@@ -18,33 +17,63 @@ import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { AppShell } from '@/components/app-shell';
+import { getContacts, addContact, updateContact, deleteContact, getCompanies } from '@/lib/firestore-service';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>(mockContacts);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  const getCompanyName = (companyId: string) => {
-    return mockCompanies.find(c => c.id === companyId)?.name || 'N/A';
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const [contactsData, companiesData] = await Promise.all([getContacts(), getCompanies()]);
+    setContacts(contactsData);
+    setCompanies(companiesData);
+    setLoading(false);
   }
 
-  const handleSave = (contactData: Contact) => {
-    if (selectedContact) {
-      setContacts(contacts.map(c => c.id === contactData.id ? contactData : c));
-    } else {
-      setContacts([...contacts, { ...contactData, id: `contact${Date.now()}` }]);
+  const getCompanyName = (companyId: string) => {
+    return companies.find(c => c.id === companyId)?.name || 'N/A';
+  }
+
+  const handleSave = async (contactData: Contact) => {
+     try {
+      if (selectedContact && selectedContact.id) {
+        await updateContact(selectedContact.id, contactData);
+        toast({ title: "Sucesso", description: "Contato atualizado." });
+      } else {
+        await addContact(contactData);
+        toast({ title: "Sucesso", description: "Contato criado." });
+      }
+      fetchData();
+      setIsFormOpen(false);
+      setSelectedContact(null);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar o contato." });
     }
-    setIsFormOpen(false);
-    setSelectedContact(null);
   };
   
-  const handleDelete = () => {
-    if (selectedContact) {
-      setContacts(contacts.filter(c => c.id !== selectedContact.id));
-      setIsDeleteDialogOpen(false);
-      setSelectedContact(null);
+  const handleDelete = async () => {
+    if (selectedContact && selectedContact.id) {
+      try {
+        await deleteContact(selectedContact.id);
+        toast({ title: "Sucesso", description: "Contato excluído." });
+        fetchData();
+        setIsDeleteDialogOpen(false);
+        setSelectedContact(null);
+      } catch (error) {
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível excluir o contato." });
+      }
     }
   };
 
@@ -64,7 +93,7 @@ export default function ContactsPage() {
       getCompanyName(contact.companyId).toLowerCase().includes(searchTerm.toLowerCase())
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contacts, searchTerm]);
+  }, [contacts, searchTerm, companies]);
 
   return (
     <AppShell>
@@ -96,31 +125,38 @@ export default function ContactsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredContacts.map(contact => (
-              <TableRow key={contact.id}>
-                <TableCell className="font-medium">{contact.name}</TableCell>
-                <TableCell>{getCompanyName(contact.companyId)}</TableCell>
-                <TableCell>{contact.email}</TableCell>
-                <TableCell>{contact.phone}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(contact)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(contact)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-             {filteredContacts.length === 0 && (
+            {loading ? (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                        Carregando...
+                    </TableCell>
+                </TableRow>
+            ) : filteredContacts.length > 0 ? (
+                filteredContacts.map(contact => (
+                <TableRow key={contact.id}>
+                    <TableCell className="font-medium">{contact.name}</TableCell>
+                    <TableCell>{getCompanyName(contact.companyId)}</TableCell>
+                    <TableCell>{contact.email}</TableCell>
+                    <TableCell>{contact.phone}</TableCell>
+                    <TableCell>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(contact)}>
+                        <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDeleteDialog(contact)}>
+                        <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    </TableCell>
+                </TableRow>
+                ))
+            ) : (
                 <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                     Nenhum contato encontrado.
                     </TableCell>
                 </TableRow>
-             )}
+            )}
           </TableBody>
         </Table>
       </div>
@@ -128,6 +164,7 @@ export default function ContactsPage() {
       {isFormOpen && (
         <ContactForm
             contact={selectedContact} 
+            companies={companies}
             onSave={handleSave}
             onCancel={() => {
                 setIsFormOpen(false);
@@ -136,10 +173,10 @@ export default function ContactsPage() {
         />
        )}
 
-       {isDeleteDialogOpen && (
+       {isDeleteDialogOpen && selectedContact && (
         <DeleteConfirmationDialog
             title="Excluir Contato"
-            description={`Tem certeza que deseja excluir o contato "${selectedContact?.name}"? Esta ação não pode ser desfeita.`}
+            description={`Tem certeza que deseja excluir o contato "${selectedContact.name}"? Esta ação não pode ser desfeita.`}
             onConfirm={handleDelete}
             onCancel={() => {
                 setIsDeleteDialogOpen(false);
