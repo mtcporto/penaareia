@@ -12,6 +12,7 @@ import {
   where,
   getDoc,
   Timestamp,
+  arrayUnion,
 } from 'firebase/firestore';
 import type { Company, Contact, Deal, Product, Task, Note, Stage } from '@/types';
 import { mockCompanies, mockContacts, mockDeals, mockProducts, mockTasks, mockNotes } from '@/data/mock-data';
@@ -74,7 +75,14 @@ export const getDeals = () => getCollection<Deal>('deals');
 export const getDeal = (id: string) => getDocument<Deal>('deals', id);
 export const addDeal = (data: Omit<Deal, 'id'>) => addDocument<Deal>('deals', { ...data, tasks: [], notes: [], contactHistory: []});
 export const updateDeal = (id: string, data: Partial<Deal>) => updateDocument<Deal>('deals', id, data);
-export const updateDealStage = (id: string, stage: Stage) => updateDocument<Deal>('deals', id, { stage, contactHistory: [...(getDeal(id) as any).contactHistory, `Card movido para ${stage} em ${new Date().toLocaleDateString('pt-BR')}`] });
+export const updateDealStage = async (id: string, stage: Stage) => {
+    const dealRef = doc(db, 'deals', id);
+    const newHistoryEntry = `Card movido para ${stage} em ${new Date().toLocaleDateString('pt-BR')}`;
+    await updateDoc(dealRef, { 
+        stage: stage,
+        contactHistory: arrayUnion(newHistoryEntry)
+    });
+};
 export const deleteDeal = (id: string) => deleteDocument('deals', id);
 
 
@@ -159,4 +167,6 @@ export const seedDatabase = async () => {
         return { success: false, message: `Erro ao popular o banco de dados: ${error.message}` };
     }
 };
+
+
 
