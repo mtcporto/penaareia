@@ -47,6 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      'login_hint': 'user@example.com',
+      'hd': 'p-na-areia-sales-flow.firebaseapp.com'
+    });
     return signInWithPopup(auth, provider);
   };
 
