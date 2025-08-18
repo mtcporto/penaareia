@@ -53,6 +53,4 @@ export interface Deal {
   stage: Stage;
   productId: string;
   contactHistory: string[];
-  tasks?: Task[]; // These are subcollections now
-  notes?: Note[]; // These are subcollections now
 }

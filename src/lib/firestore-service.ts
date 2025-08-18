@@ -14,7 +14,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import type { Company, Contact, Deal, Product, Task, Note, Stage } from '@/types';
-import { mockCompanies, mockContacts, mockDeals, mockProducts } from '@/data/mock-data';
+import { mockCompanies, mockContacts, mockDeals, mockProducts, mockTasks, mockNotes } from '@/data/mock-data';
 
 // Generic CRUD Functions
 const getCollection = async <T>(collectionName: string): Promise<T[]> => {
@@ -130,22 +130,33 @@ export const seedDatabase = async () => {
     if (await isCollectionEmpty('deals')) {
         console.log("Seeding deals...");
         mockDeals.forEach(deal => {
-            const { tasks, notes, ...dealData } = deal;
-            const dealDocRef = doc(db, 'deals', deal.id);
+            const { id, ...dealData } = deal;
+            const dealDocRef = doc(db, 'deals', id);
             batch.set(dealDocRef, dealData);
-            
-            tasks?.forEach(task => {
-                const taskDocRef = doc(db, `deals/${deal.id}/tasks`, task.id);
-                batch.set(taskDocRef, task);
-            });
+        });
 
-            notes?.forEach(note => {
-                const noteDocRef = doc(db, `deals/${deal.id}/notes`, note.id);
-                batch.set(noteDocRef, note);
-            });
+        console.log("Seeding tasks...");
+        mockTasks.forEach(task => {
+            const { dealId, id, dueDate, ...taskData } = task;
+            const taskDocRef = doc(db, `deals/${dealId}/tasks`, id);
+            batch.set(taskDocRef, {...taskData, dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined });
+        });
+
+        console.log("Seeding notes...");
+        mockNotes.forEach(note => {
+            const { dealId, id, createdAt, ...noteData } = note;
+            const noteDocRef = doc(db, `deals/${dealId}/notes`, id);
+            batch.set(noteDocRef, {...noteData, createdAt: Timestamp.fromDate(createdAt) });
         });
     }
 
-    await batch.commit();
-    console.log("Database seeded successfully!");
+    try {
+        await batch.commit();
+        console.log("Database seeded successfully!");
+        return { success: true, message: "Banco de dados populado com sucesso!" };
+    } catch (error: any) {
+        console.error("Error seeding database: ", error);
+        return { success: false, message: `Erro ao popular o banco de dados: ${error.message}` };
+    }
 };
+

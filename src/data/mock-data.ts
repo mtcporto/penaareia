@@ -1,4 +1,5 @@
-import type { Company, Contact, Deal, Product } from '@/types';
+import type { Company, Contact, Deal, Product, Task, Note } from '@/types';
+import { Timestamp } from 'firebase/firestore';
 
 export const mockCompanies: Company[] = [
   { id: '1', name: 'Construtora Sol Nascente', email: 'contato@solnascente.com', phone: '(11) 98765-4321', website: 'solnascente.com' },
@@ -32,13 +33,6 @@ export const mockDeals: Deal[] = [
     stage: 'Proposta enviada',
     productId: 'p1',
     contactHistory: ['Reunião inicial em 10/05/2024.', 'E-mail com proposta enviado em 15/05/2024.'],
-    tasks: [
-        { id: 't1', description: 'Follow-up da proposta', completed: false, dueDate: '2024-06-30' },
-        { id: 't2', description: 'Enviar documentação', completed: true, dueDate: '2024-06-25' },
-    ],
-    notes: [
-        { id: 'n1', content: 'Cliente pareceu muito interessado no acabamento.', createdAt: '2024-06-20' }
-    ]
   },
   {
     id: 'd2',
@@ -49,8 +43,6 @@ export const mockDeals: Deal[] = [
     stage: 'Interesse identificado',
     productId: 'p2',
     contactHistory: ['Contato via telefone em 12/05/2024.', 'Agendada visita para 20/05/2024.'],
-    tasks: [],
-    notes: []
   },
   {
     id: 'd3',
@@ -61,8 +53,6 @@ export const mockDeals: Deal[] = [
     stage: 'Sem contato',
     productId: 'p3',
     contactHistory: ['Lead recebido via formulário do site em 18/05/2024.'],
-    tasks: [],
-    notes: []
   },
   {
     id: 'd4',
@@ -73,8 +63,6 @@ export const mockDeals: Deal[] = [
     stage: 'Contato feito',
     productId: 'p4',
     contactHistory: ['Primeiro contato por e-mail em 17/05/2024.'],
-    tasks: [],
-    notes: []
   },
   {
     id: 'd5',
@@ -85,7 +73,14 @@ export const mockDeals: Deal[] = [
     stage: 'Fechamento',
     productId: 'p5',
     contactHistory: ['Contrato assinado em 01/05/2024.'],
-    tasks: [],
-    notes: []
   }
+];
+
+export const mockTasks: (Omit<Task, 'id' | 'dueDate'> & { dealId: string; id: string; dueDate?: Date})[] = [
+    { id: 't1', dealId: 'd1', description: 'Follow-up da proposta', completed: false, dueDate: new Date('2024-06-30') },
+    { id: 't2', dealId: 'd1', description: 'Enviar documentação', completed: true, dueDate: new Date('2024-06-25') },
+];
+
+export const mockNotes: (Omit<Note, 'id' | 'createdAt'> & { dealId: string; id: string; createdAt: Date})[] = [
+    { id: 'n1', dealId: 'd1', content: 'Cliente pareceu muito interessado no acabamento.', createdAt: new Date('2024-06-20T10:30:00') }
 ];
