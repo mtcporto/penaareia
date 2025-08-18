@@ -98,7 +98,7 @@ export function KanbanBoard() {
         </Button>
       </div>
       <div className="flex-1 overflow-x-auto">
-        <div className="grid grid-flow-col auto-cols-max gap-6 h-full">
+        <div className="inline-grid grid-flow-col auto-cols-max gap-6 h-full pb-4">
           {STAGES.map(stage => (
             <KanbanColumn
               key={stage}
