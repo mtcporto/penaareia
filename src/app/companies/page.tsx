@@ -13,13 +13,12 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit, Trash2, Database } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 import { CompanyForm } from './company-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { AppShell } from '@/components/app-shell';
-import { getCompanies, addCompany, updateCompany, deleteCompany, seedDatabase } from '@/lib/firestore-service';
+import { getCompanies, addCompany, updateCompany, deleteCompany } from '@/lib/firestore-service';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/auth-context';
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -29,7 +28,6 @@ export default function CompaniesPage() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
   
   useEffect(() => {
     fetchCompanies();
@@ -73,17 +71,6 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleSeed = async () => {
-    try {
-      await seedDatabase();
-      toast({ title: "Sucesso", description: "Banco de dados populado com dados iniciais." });
-      fetchCompanies();
-    } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível popular o banco de dados." });
-    }
-  }
-
   const openForm = (company: Company | null = null) => {
     setSelectedCompany(company);
     setIsFormOpen(true);
@@ -113,12 +100,6 @@ export default function CompaniesPage() {
           />
         </div>
          <div className="flex gap-2">
-            {isAdmin && (
-              <Button variant="outline" onClick={handleSeed}>
-                <Database className="mr-2 h-5 w-5" />
-                Popular Dados
-              </Button>
-            )}
             <Button onClick={() => openForm()}>
               <PlusCircle className="mr-2 h-5 w-5" />
               Nova Empresa
