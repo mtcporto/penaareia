@@ -88,7 +88,7 @@ export default function ContactsPage() {
   }
 
   const filteredContacts = useMemo(() => {
-    if (loading) return [];
+    if (loading || !companies.length) return [];
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCompanyName(contact.companyId).toLowerCase().includes(searchTerm.toLowerCase())
