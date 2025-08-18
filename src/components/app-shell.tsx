@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { Briefcase, Building2, Users, Menu, Package, Bot, LogOut } from "lucide-react"
+import { Briefcase, Building2, Users, Menu, Package, Bot, LogOut, LifeBuoy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -27,6 +27,7 @@ const navigation = [
   { name: "Empresas", href: "/companies", icon: Building2 },
   { name: "Contatos", href: "/contacts", icon: Users },
   { name: "Produtos", href: "/products", icon: Package },
+  { name: "Suporte", href: "/support", icon: LifeBuoy },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
