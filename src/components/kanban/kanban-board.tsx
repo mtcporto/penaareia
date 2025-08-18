@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { Deal, Stage } from '@/types';
 import { mockCompanies, mockContacts, mockDeals, mockProducts } from '@/data/mock-data';
 import { KanbanColumn } from './kanban-column';
@@ -9,6 +9,7 @@ import { DealForm } from './deal-form';
 import { Button } from '../ui/button';
 import { PlusCircle } from 'lucide-react';
 import { DeleteConfirmationDialog } from '../delete-confirmation-dialog';
+import { useRouter } from 'next/navigation';
 
 type DealsByStage = { [key in Stage]: Deal[] };
 
@@ -21,13 +22,15 @@ export function KanbanBoard() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
 
   const handleSave = (dealData: Deal) => {
     if (selectedDeal) {
       setDeals(deals.map(d => d.id === dealData.id ? dealData : d));
     } else {
-      setDeals([...deals, { ...dealData, id: `d${Date.now()}` }]);
+      const newDeal = { ...dealData, id: `d${Date.now()}`, contactHistory: [], tasks: [], notes: [] };
+      setDeals([...deals, newDeal]);
     }
     setIsFormOpen(false);
     setSelectedDeal(null);
@@ -81,7 +84,7 @@ export function KanbanBoard() {
 
     setDeals(prevDeals =>
       prevDeals.map(deal =>
-        deal.id === dealId ? { ...deal, stage: newStage } : deal
+        deal.id === dealId ? { ...deal, stage: newStage, contactHistory: [...deal.contactHistory, `Card movido para ${newStage} em ${new Date().toLocaleDateString('pt-BR')}`] } : deal
       )
     );
   };

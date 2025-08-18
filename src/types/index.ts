@@ -50,6 +50,6 @@ export interface Deal {
   stage: Stage;
   productId: string;
   contactHistory: string[];
-  tasks?: Task[];
-  notes?: Note[];
+  tasks: Task[];
+  notes: Note[];
 }

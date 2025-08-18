@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import type { Deal, Company, Contact, Product } from '@/types';
+import type { Deal, Company, Contact } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { AIAssistantModal } from './ai-assistant-modal';
 import { cn } from '@/lib/utils';
 import { mockProducts } from '@/data/mock-data';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
 
 interface KanbanCardProps {
   deal: Deal;
@@ -24,6 +25,7 @@ interface KanbanCardProps {
 
 export function KanbanCard({ deal, company, contact, isDragging, handleDragStart, handleDragEnd, onEdit, onDelete }: KanbanCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
   const product = mockProducts.find(p => p.id === deal.productId);
 
   const formatCurrency = (value: number) => {
@@ -33,14 +35,23 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
     }).format(value);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Avoid navigation when clicking on interactive elements
+    if ((e.target as HTMLElement).closest('button, [role="menuitem"]')) {
+      return;
+    }
+    router.push(`/deals/${deal.id}`);
+  };
+
   return (
     <>
       <Card
         draggable
         onDragStart={(e) => handleDragStart(e, deal.id)}
         onDragEnd={handleDragEnd}
+        onClick={handleCardClick}
         className={cn(
-          "cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border-l-4 border-primary",
+          "cursor-pointer active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border-l-4 border-primary",
           isDragging && "opacity-50 scale-95 rotate-3 shadow-xl"
         )}
       >
@@ -86,7 +97,7 @@ export function KanbanCard({ deal, company, contact, isDragging, handleDragStart
             variant="ghost"
             size="icon"
             className="text-primary hover:text-primary hover:bg-primary/10 rounded-full"
-            onClick={() => setIsModalOpen(true)}
+            onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
             aria-label="Sugestão de IA"
           >
             <Lightbulb className="w-5 h-5" />

@@ -32,6 +32,13 @@ export const mockDeals: Deal[] = [
     stage: 'Proposta enviada',
     productId: 'p1',
     contactHistory: ['Reunião inicial em 10/05/2024.', 'E-mail com proposta enviado em 15/05/2024.'],
+    tasks: [
+        { id: 't1', description: 'Follow-up da proposta', completed: false, dueDate: '2024-06-30' },
+        { id: 't2', description: 'Enviar documentação', completed: true, dueDate: '2024-06-25' },
+    ],
+    notes: [
+        { id: 'n1', content: 'Cliente pareceu muito interessado no acabamento.', createdAt: '2024-06-20' }
+    ]
   },
   {
     id: 'd2',
@@ -42,6 +49,8 @@ export const mockDeals: Deal[] = [
     stage: 'Interesse identificado',
     productId: 'p2',
     contactHistory: ['Contato via telefone em 12/05/2024.', 'Agendada visita para 20/05/2024.'],
+    tasks: [],
+    notes: []
   },
   {
     id: 'd3',
@@ -52,6 +61,8 @@ export const mockDeals: Deal[] = [
     stage: 'Sem contato',
     productId: 'p3',
     contactHistory: ['Lead recebido via formulário do site em 18/05/2024.'],
+    tasks: [],
+    notes: []
   },
   {
     id: 'd4',
@@ -62,6 +73,8 @@ export const mockDeals: Deal[] = [
     stage: 'Contato feito',
     productId: 'p4',
     contactHistory: ['Primeiro contato por e-mail em 17/05/2024.'],
+    tasks: [],
+    notes: []
   },
   {
     id: 'd5',
@@ -72,5 +85,7 @@ export const mockDeals: Deal[] = [
     stage: 'Fechamento',
     productId: 'p5',
     contactHistory: ['Contrato assinado em 01/05/2024.'],
+    tasks: [],
+    notes: []
   }
 ];

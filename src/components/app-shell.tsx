@@ -21,6 +21,13 @@ const navigation = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
+  const getPageTitle = () => {
+    if (pathname.startsWith('/deals/')) {
+        return 'Detalhes do Negócio'
+    }
+    return navigation.find(item => item.href === pathname)?.name || 'Dashboard'
+  }
+  
   const NavLink = ({ item, isMobile }: { item: typeof navigation[0], isMobile?: boolean }) => (
     <Link
       href={item.href}
@@ -80,7 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Sheet>
           <div className="w-full flex-1">
              <h1 className="text-xl font-semibold text-foreground">
-                {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+                {getPageTitle()}
              </h1>
           </div>
         </header>
