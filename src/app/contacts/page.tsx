@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from 'react';
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import { AppShell } from '@/components/app-shell';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>(mockContacts);
@@ -61,10 +63,11 @@ export default function ContactsPage() {
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCompanyName(contact.companyId).toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [contacts, searchTerm, getCompanyName]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contacts, searchTerm]);
 
   return (
-    <div>
+    <AppShell>
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -145,6 +148,6 @@ export default function ContactsPage() {
         />
        )}
 
-    </div>
+    </AppShell>
   );
 }

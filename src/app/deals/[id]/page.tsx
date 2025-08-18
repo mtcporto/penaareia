@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,6 +14,7 @@ import { TaskForm } from './task-form';
 import { NoteForm } from './note-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { format } from 'date-fns';
+import { AppShell } from '@/components/app-shell';
 
 export default function DealDetailPage() {
   const params = useParams();
@@ -86,7 +88,7 @@ export default function DealDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AppShell>
       <Button variant="outline" onClick={() => router.back()} className="mb-4">
         <ArrowLeft className="mr-2" />
         Voltar
@@ -196,6 +198,6 @@ export default function DealDetailPage() {
             onCancel={() => setItemToDelete(null)}
         />
        )}
-    </div>
+    </AppShell>
   );
 }
