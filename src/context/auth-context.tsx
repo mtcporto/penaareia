@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
       if (currentUser) {
         setUser(currentUser);
         const brokerData = await getBroker(currentUser.uid);
@@ -76,8 +77,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login');
   };
   
-  // While loading, show a spinner. This prevents rendering the children
-  // with an incomplete auth state.
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
@@ -86,8 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If not loading and no user, and not on the login page, it means we should redirect.
-  // Returning null prevents a flash of content before redirect.
   if (!user && pathname !== '/login') {
     return null; 
   }
@@ -95,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

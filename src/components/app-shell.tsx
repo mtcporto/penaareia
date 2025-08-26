@@ -24,21 +24,14 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/auth-context"
 
-const mainNavigation = [
-  { name: "Negócios", href: "/", icon: Briefcase },
-  { name: "Empresas", href: "/companies", icon: Building2 },
-  { name: "Contatos", href: "/contacts", icon: Users },
-  { name: "Produtos", href: "/products", icon: Package },
+const navItems = [
+  { name: "Negócios", href: "/", icon: Briefcase, adminOnly: false },
+  { name: "Empresas", href: "/companies", icon: Building2, adminOnly: false },
+  { name: "Contatos", href: "/contacts", icon: Users, adminOnly: false },
+  { name: "Produtos", href: "/products", icon: Package, adminOnly: false },
+  { name: "Corretores", href: "/brokers", icon: UserCog, adminOnly: true },
+  { name: "Suporte", href: "/support", icon: LifeBuoy, adminOnly: false },
 ];
-
-const adminNavigation = [
-    { name: "Corretores", href: "/brokers", icon: UserCog },
-];
-
-const supportNavigation = [
-    { name: "Suporte", href: "/support", icon: LifeBuoy },
-];
-
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -50,22 +43,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
   
-  const NavLink = ({ item, isMobile = false }: { item: typeof mainNavigation[0], isMobile?: boolean }) => (
-    <Link
-      href={item.href}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-        pathname === item.href && "text-primary bg-muted",
-        isMobile ? "text-lg" : "text-sm font-medium"
-      )}
-    >
-      <item.icon className="h-5 w-5" />
-      {item.name}
-    </Link>
-  );
-
-  const allNavItems = [...mainNavigation, ...(isAdmin ? adminNavigation : []), ...supportNavigation];
-  
   if (loading) {
      return (
         <div className="flex items-center justify-center h-screen">
@@ -73,7 +50,61 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
     );
   }
-
+  
+  const NavLink = ({ item, isMobile = false }: { item: typeof navItems[0], isMobile?: boolean }) => {
+    if (item.adminOnly && !isAdmin) {
+      return null;
+    }
+    return (
+      <Link
+        href={item.href}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+          pathname === item.href && "text-primary bg-muted",
+          isMobile ? "text-lg" : "text-sm font-medium"
+        )}
+      >
+        <item.icon className="h-5 w-5" />
+        {item.name}
+      </Link>
+    );
+  };
+  
+  const UserMenu = () => (
+    <>
+      {!loading && user && (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" className="rounded-full">
+                    <Image
+                        src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
+                        alt={broker?.name || user.displayName || 'User Avatar'}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                        data-ai-hint="user avatar"
+                    />
+                    <span className="sr-only">Toggle user menu</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
+                        {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                        {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </>
+  );
 
   const MobileNav = () => (
      <Sheet>
@@ -97,44 +128,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SheetTitle>
             </SheetHeader>
             <nav className="grid gap-2 text-lg font-medium mt-4">
-                {allNavItems.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                {navItems.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
             </nav>
         </SheetContent>
     </Sheet>
-  );
-
-  const UserMenu = () => (
-      user && (
-          <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" size="icon" className="rounded-full">
-                      <Image
-                          src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
-                          alt={broker?.name || user.displayName || 'User Avatar'}
-                          width={32}
-                          height={32}
-                          className="rounded-full"
-                          data-ai-hint="user avatar"
-                      />
-                      <span className="sr-only">Toggle user menu</span>
-                  </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
-                          {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
-                          {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
-                      </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sair</span>
-                  </DropdownMenuItem>
-              </DropdownMenuContent>
-          </DropdownMenu>
-      )
   );
 
   const DesktopSidebar = () => (
@@ -148,9 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {mainNavigation.map(item => <NavLink key={item.href} item={item} />)}
-              {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
-              {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
+              {navItems.map(item => <NavLink key={item.href} item={item} />)}
             </nav>
           </div>
         </div>
