@@ -187,6 +187,22 @@ const isCollectionEmpty = async (collectionName: string) => {
 export const seedDatabase = async () => {
     const batch = writeBatch(db);
 
+    // Create Admin user if it doesn't exist. This user corresponds to the Firebase Auth user.
+    // The UID for admin@mail.com with password '123456' is hardcoded here for simplicity.
+    // In a real app, you would handle this more dynamically.
+    const adminId = 'dGcih1HkYge5YHHbWFlk1vPUdBy2'; // UID for admin@mail.com
+    const adminRef = doc(db, 'brokers', adminId);
+    const adminDoc = await getDoc(adminRef);
+    if (!adminDoc.exists()) {
+        console.log("Creating admin user...");
+        batch.set(adminRef, {
+            id: adminId,
+            name: 'Admin',
+            email: 'admin@mail.com',
+            role: 'admin',
+        });
+    }
+
     if (await isCollectionEmpty('companies')) {
         console.log("Seeding companies...");
         mockCompanies.forEach(company => {

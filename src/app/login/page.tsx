@@ -9,15 +9,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Mail, KeyRound } from 'lucide-react';
+import { Bot, Mail, KeyRound, DatabaseZap } from 'lucide-react';
+import { seedDatabase } from '@/lib/firestore-service';
+
 
 export default function LoginPage() {
   const { signInWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@mail.com');
+  const [password, setPassword] = useState('123456');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +54,17 @@ export default function LoginPage() {
        setIsLoading(false);
     }
   };
+  
+  const handleSeed = async () => {
+      setIsSeeding(true);
+      const result = await seedDatabase();
+      if(result.success) {
+        toast({ title: "Sucesso", description: result.message });
+      } else {
+        toast({ variant: "destructive", title: "Erro", description: result.message });
+      }
+      setIsSeeding(false);
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-muted/40">
@@ -110,6 +124,13 @@ export default function LoginPage() {
             </svg>
             Entrar com Google
           </Button>
+            <div className="mt-4 flex items-center">
+                <div className="flex-grow border-t border-muted-foreground"></div>
+            </div>
+           <Button onClick={handleSeed} disabled={isSeeding} variant="secondary" className="w-full mt-4">
+                <DatabaseZap className="mr-2 h-5 w-5" />
+                {isSeeding ? 'Populando...' : 'Popular Banco de Dados'}
+            </Button>
         </CardContent>
       </Card>
     </div>
