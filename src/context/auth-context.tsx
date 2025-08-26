@@ -80,11 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-         <div className="flex items-center justify-center h-screen bg-background">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      ) : children}
+      {children}
     </AuthContext.Provider>
   );
 };
