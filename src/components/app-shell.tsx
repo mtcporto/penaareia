@@ -64,76 +64,80 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   )
   
   return (
-    <div className="flex min-h-screen w-full flex-col">
-       <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <div className="flex items-center gap-2 md:gap-4">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button
-                    variant="outline"
-                    size="icon"
-                    className="shrink-0 md:hidden"
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        
+        {/* Mobile Menu */}
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0 md:hidden"
+                >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+                <nav className="grid gap-6 text-lg font-medium">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 text-lg font-semibold mb-4"
                     >
-                    <Menu className="h-5 w-5" />
-                    <span className="sr-only">Toggle navigation menu</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="flex flex-col">
-                    <nav className="grid gap-6 text-lg font-medium">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 text-lg font-semibold mb-4"
-                        >
-                            <Bot className="h-6 w-6 text-primary" />
-                            <span>Pé na Areia</span>
-                        </Link>
-                        {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                        {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                        {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                    </nav>
-                </SheetContent>
-            </Sheet>
+                        <Bot className="h-6 w-6 text-primary" />
+                        <span>Pé na Areia</span>
+                    </Link>
+                    {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                    {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                    {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                </nav>
+            </SheetContent>
+        </Sheet>
+        
+        {/* Desktop Navigation */}
+        <div className="flex w-full items-center">
              <Link href="/" className="hidden items-center gap-2 font-semibold md:flex">
                 <Bot className="h-6 w-6 text-primary" />
                 <span>Pé na Areia</span>
             </Link>
-        </div>
-        
-        <div className="ml-auto flex items-center gap-4 md:gap-2 lg:gap-4">
-           <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
+            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6 ml-6">
                 {navigation.map(item => <NavLink key={item.name} item={item} />)}
                 {isAdmin && adminNavigation.map(item => <NavLink key={item.name} item={item} />)}
                 {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
             </nav>
+            
             {user && (
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                            <Image
-                                src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
-                                alt={broker?.name || user.displayName || 'User Avatar'}
-                                width={32}
-                                height={32}
-                                className="rounded-full"
-                                data-ai-hint="user avatar"
-                            />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
-                                {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
-                                {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                           <LogOut className="mr-2 h-4 w-4" />
-                            <span>Sair</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                 <div className="ml-auto flex items-center gap-4">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                                <Image
+                                    src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
+                                    alt={broker?.name || user.displayName || 'User Avatar'}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full"
+                                    data-ai-hint="user avatar"
+                                />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
+                                    {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                                    {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                            <LogOut className="mr-2 h-4 w-4" />
+                                <span>Sair</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             )}
         </div>
       </header>
