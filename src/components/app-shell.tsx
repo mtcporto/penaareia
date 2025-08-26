@@ -95,20 +95,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
         </Sheet>
         
-        {/* Desktop Navigation */}
         <div className="flex w-full items-center">
              <Link href="/" className="hidden items-center gap-2 font-semibold md:flex">
                 <Bot className="h-6 w-6 text-primary" />
                 <span>Pé na Areia</span>
             </Link>
-            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6 ml-6">
+            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6 ml-auto">
                 {navigation.map(item => <NavLink key={item.name} item={item} />)}
                 {isAdmin && adminNavigation.map(item => <NavLink key={item.name} item={item} />)}
                 {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
             </nav>
             
             {user && (
-                 <div className="ml-auto flex items-center gap-4">
+                 <div className="flex items-center gap-4 ml-4">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
