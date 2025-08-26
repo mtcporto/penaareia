@@ -127,19 +127,21 @@ export const migrateProducts = async (newProductsData: any[]) => {
         newProductsData.forEach(item => {
              if (item.Produto === 'TOTAL VGV') return;
             
-            const newProduct: Omit<Product, 'id'> = {
+            const newProduct: Partial<Omit<Product, 'id'>> = {
                 name: item.Produto || 'N/A',
-                builder: item.Construtora,
-                size: item.Tamanho,
-                rooms: item.QTOS,
-                position: item.Posição,
                 price: parseCurrency(item['Valor (R$)']) || 0,
-                pricePerSqM: parseCurrency(item['mt²']),
-                location: item.Local,
-                deliveryDate: item.Entrega,
-                unit: item.Unidade,
-                floor: item.Andar,
             };
+
+            if (item.Construtora) newProduct.builder = item.Construtora;
+            if (item.Tamanho) newProduct.size = item.Tamanho;
+            if (item.QTOS) newProduct.rooms = item.QTOS;
+            if (item.Posição) newProduct.position = item.Posição;
+            if (parseCurrency(item['mt²'])) newProduct.pricePerSqM = parseCurrency(item['mt²']);
+            if (item.Local) newProduct.location = item.Local;
+            if (item.Entrega) newProduct.deliveryDate = item.Entrega;
+            if (item.Unidade) newProduct.unit = item.Unidade;
+            if (item.Andar) newProduct.floor = item.Andar;
+
             const docRef = doc(collection(db, 'products'));
             batch.set(docRef, newProduct);
         });
