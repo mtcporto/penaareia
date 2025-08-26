@@ -6,7 +6,7 @@ import { onAuthStateChanged, User, signOut as firebaseSignOut, GoogleAuthProvide
 import { auth } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { getBroker } from '@/lib/firestore-service';
-import type { Broker, UserRole } from '@/types';
+import type { Broker } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -32,12 +32,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true); // Start loading when auth state changes
+      setLoading(true); 
       if (user) {
         setUser(user);
         const brokerData = await getBroker(user.uid);
         setBroker(brokerData);
-        // Ensure isAdmin is set only after brokerData is fetched
         setIsAdmin(brokerData?.role === 'admin');
 
         if (pathname === '/login') {
@@ -52,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             router.push('/login');
         }
       }
-      setLoading(false); // Stop loading after all async operations
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -69,34 +68,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      'login_hint': 'user@example.com',
-      'hd': 'p-na-areia-sales-flow.firebaseapp.com'
-    });
-    // This is a simplified flow. In a real app, you'd check if the Google user
-    // exists in your 'brokers' collection and what their role is.
     return signInWithPopup(auth, provider);
   };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    setUser(null);
-    setBroker(null);
-    setIsAdmin(false);
     router.push('/login');
   };
   
-  // This initial loading screen is important
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen bg-background">
             <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
         </div>
     );
   }
 
-  // Render children only when not loading and authentication check is complete.
-  // This prevents rendering AppShell with incorrect auth state.
+  // Prevent rendering children until auth state is fully resolved, unless on the login page
+  if (!user && pathname !== '/login') {
+    return null; 
+  }
+
+
   return (
     <AuthContext.Provider value={{ user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut }}>
       {children}

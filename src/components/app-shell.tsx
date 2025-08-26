@@ -24,32 +24,33 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/auth-context"
 
-const navigation = [
+const mainNavigation = [
   { name: "Negócios", href: "/", icon: Briefcase },
   { name: "Empresas", href: "/companies", icon: Building2 },
   { name: "Contatos", href: "/contacts", icon: Users },
   { name: "Produtos", href: "/products", icon: Package },
-]
+];
 
 const adminNavigation = [
     { name: "Corretores", href: "/brokers", icon: UserCog },
-]
+];
 
 const supportNavigation = [
     { name: "Suporte", href: "/support", icon: LifeBuoy },
-]
+];
+
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter();
-  const { user, broker, isAdmin, signOut, loading } = useAuth(); // Use loading state
+  const { user, broker, isAdmin, signOut, loading } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/login');
   };
   
-  const NavLink = ({ item, isMobile = false }: { item: typeof navigation[0], isMobile?: boolean }) => (
+  const NavLink = ({ item, isMobile = false }: { item: typeof mainNavigation[0], isMobile?: boolean }) => (
     <Link
       href={item.href}
       className={cn(
@@ -61,7 +62,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <item.icon className="h-5 w-5" />
       {item.name}
     </Link>
-  )
+  );
+
+  const allNavItems = [...mainNavigation, ...(isAdmin ? adminNavigation : []), ...supportNavigation];
   
   if (loading) {
      return (
@@ -71,13 +74,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const DesktopNav = () => (
-    <nav className="hidden md:flex md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
-        {navigation.map(item => <NavLink key={item.href} item={item} />)}
-        {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
-        {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
-    </nav>
-  )
 
   const MobileNav = () => (
      <Sheet>
@@ -101,17 +97,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SheetTitle>
             </SheetHeader>
             <nav className="grid gap-2 text-lg font-medium mt-4">
-                {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                {allNavItems.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
             </nav>
         </SheetContent>
     </Sheet>
-  )
+  );
 
   const UserMenu = () => (
-    <>
-      {user && (
+      user && (
           <DropdownMenu>
               <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="icon" className="rounded-full">
@@ -141,14 +134,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </DropdownMenuItem>
               </DropdownMenuContent>
           </DropdownMenu>
-      )}
-    </>
-  )
+      )
+  );
 
-  return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      {/* Sidebar */}
-      <div className="hidden border-r bg-muted/40 md:block">
+  const DesktopSidebar = () => (
+     <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -158,25 +148,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {navigation.map(item => <NavLink key={item.href} item={item} />)}
-              {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
-              {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
+              {allNavItems.map(item => <NavLink key={item.href} item={item} />)}
             </nav>
           </div>
         </div>
       </div>
-      
-      {/* Main Content */}
+  );
+
+  return (
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <DesktopSidebar />
       <div className="flex flex-col">
-          {/* Header */}
           <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
             <MobileNav />
-            <div className="w-full flex-1">
-              {/* Optional: Add search bar or other header content here */}
-            </div>
+            <div className="w-full flex-1" />
             <UserMenu />
           </header>
-          {/* Page Content */}
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto">
             {children}
           </main>
