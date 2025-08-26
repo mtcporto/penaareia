@@ -15,7 +15,7 @@ import {
   arrayUnion,
 } from 'firebase/firestore';
 import type { Company, Contact, Deal, Product, Task, Note, Stage } from '@/types';
-import { mockCompanies, mockContacts, mockDeals, mockProducts, mockTasks, mockNotes } from '@/data/mock-data';
+import { mockCompanies, mockContacts, mockDeals, mockTasks, mockNotes } from '@/data/mock-data';
 
 // Generic CRUD Functions
 const getCollection = async <T>(collectionName: string): Promise<T[]> => {
@@ -98,6 +98,62 @@ export const addNote = (dealId: string, data: Omit<Note, 'id'>) => addDocument<N
 export const updateNote = (dealId: string, noteId: string, data: Partial<Note>) => updateDocument<Note>(`deals/${dealId}/notes`, noteId, data);
 export const deleteNote = (dealId: string, noteId: string) => deleteDocument(`deals/${dealId}/notes`, noteId);
 
+// Helper to clear a collection
+const clearCollection = async (collectionName: string) => {
+    const collectionRef = collection(db, collectionName);
+    const snapshot = await getDocs(collectionRef);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+    console.log(`${collectionName} collection cleared.`);
+}
+
+const parseCurrency = (currencyString: string | null): number | undefined => {
+    if (!currencyString) return undefined;
+    const numberString = currencyString.replace(/R\$\s?/, '').replace(/\./g, '').replace(/,/, '.');
+    const value = parseFloat(numberString);
+    return isNaN(value) ? undefined : value;
+}
+
+
+export const migrateProducts = async (newProductsData: any[]) => {
+    console.log("Starting product migration...");
+    try {
+        await clearCollection('products');
+
+        const batch = writeBatch(db);
+        newProductsData.forEach(item => {
+             if (item.Produto === 'TOTAL VGV') return;
+            
+            const newProduct: Omit<Product, 'id'> = {
+                name: item.Produto || 'N/A',
+                builder: item.Construtora,
+                size: item.Tamanho,
+                rooms: item.QTOS,
+                position: item.Posição,
+                price: parseCurrency(item['Valor (R$)']) || 0,
+                pricePerSqM: parseCurrency(item['mt²']),
+                location: item.Local,
+                deliveryDate: item.Entrega,
+                unit: item.Unidade,
+                floor: item.Andar,
+            };
+            const docRef = doc(collection(db, 'products'));
+            batch.set(docRef, newProduct);
+        });
+
+        await batch.commit();
+        console.log("Product migration completed successfully!");
+        return { success: true, message: "Produtos migrados com sucesso!" };
+
+    } catch (error: any) {
+        console.error("Error migrating products:", error);
+        return { success: false, message: `Erro ao migrar produtos: ${error.message}` };
+    }
+}
+
 
 // --- Seeding ---
 // Check if data exists
@@ -124,14 +180,6 @@ export const seedDatabase = async () => {
         mockContacts.forEach(contact => {
             const docRef = doc(db, 'contacts', contact.id);
             batch.set(docRef, contact);
-        });
-    }
-
-    if (await isCollectionEmpty('products')) {
-         console.log("Seeding products...");
-        mockProducts.forEach(product => {
-            const docRef = doc(db, 'products', product.id);
-            batch.set(docRef, product);
         });
     }
     
@@ -167,6 +215,3 @@ export const seedDatabase = async () => {
         return { success: false, message: `Erro ao popular o banco de dados: ${error.message}` };
     }
 };
-
-
-

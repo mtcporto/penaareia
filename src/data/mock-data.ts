@@ -1,5 +1,5 @@
 
-import type { Company, Contact, Deal, Product, Task, Note } from '@/types';
+import type { Company, Contact, Deal, Task, Note } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 export const mockCompanies: Company[] = [
@@ -15,54 +15,6 @@ export const mockContacts: Contact[] = [
   { id: 'c3', name: 'Carlos Pereira', companyId: '2', email: 'carlos.pereira@litoraneos.com', phone: '(21) 91234-3333' },
   { id: 'c4', name: 'Ana Costa', companyId: '3', email: 'ana.costa@luxoimoveis.com', phone: '(31) 99999-4444' },
   { id: 'c5', name: 'Pedro Martins', companyId: '2', email: 'pedro.martins@litoraneos.com', phone: '(21) 91234-5555' },
-];
-
-export const mockProducts: Product[] = [
-    { 
-        id: 'p1', 
-        name: 'AKUA', 
-        price: 360000, 
-        description: 'Apartamento em Bessa.',
-        builder: 'Urban',
-        size: 24,
-        rooms: 'FLAT',
-        position: 'SUL',
-        pricePerSqM: 15000,
-        location: 'BESSA',
-        deliveryDate: 'dez./26',
-        unit: '1º andar',
-        floor: '1º andar'
-    },
-    { 
-        id: 'p2', 
-        name: 'Cobertura Duplex', 
-        price: 1200000, 
-        description: '4 suítes, piscina privativa, 3 vagas de garagem.',
-        builder: 'Imóveis de Luxo SA',
-        size: 300,
-        rooms: '4 suítes',
-        position: 'Norte',
-        pricePerSqM: 4000,
-        location: 'Altiplano',
-        deliveryDate: 'Pronto',
-        unit: '301',
-        floor: '3º'
-    },
-    { 
-        id: 'p3', 
-        name: 'Casa Térrea com Piscina', 
-        price: 300000, 
-        description: '3 quartos, área gourmet com churrasqueira.',
-        builder: 'Parceiros Litorâneos',
-        size: 150,
-        rooms: '3 quartos',
-        position: 'Leste',
-        pricePerSqM: 2000,
-        location: 'Intermares',
-        deliveryDate: 'Pronto',
-        unit: '123',
-        floor: 'Térreo'
-    },
 ];
 
 export const mockDeals: Deal[] = [

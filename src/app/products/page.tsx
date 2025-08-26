@@ -13,13 +13,15 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, DatabaseZap } from 'lucide-react';
 import { ProductForm } from './product-form';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { AppShell } from '@/components/app-shell';
-import { getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/firestore-service';
+import { getProducts, addProduct, updateProduct, deleteProduct, migrateProducts } from '@/lib/firestore-service';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/context/auth-context';
+import { productsData } from '@/data/new-products';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,6 +31,8 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
+  const [isMigrating, setIsMigrating] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -39,6 +43,18 @@ export default function ProductsPage() {
     const data = await getProducts();
     setProducts(data);
     setLoading(false);
+  }
+  
+  const handleMigrate = async () => {
+    setIsMigrating(true);
+    const result = await migrateProducts(productsData);
+    if (result.success) {
+        toast({ title: "Sucesso", description: "Produtos migrados com sucesso!" });
+        fetchProducts();
+    } else {
+        toast({ variant: "destructive", title: "Erro na Migração", description: result.message });
+    }
+    setIsMigrating(false);
   }
 
   const handleSave = async (productData: Product) => {
@@ -110,10 +126,18 @@ export default function ProductsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={() => openForm()}>
-          <PlusCircle className="mr-2 h-5 w-5" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+            {isAdmin && (
+                <Button onClick={handleMigrate} disabled={isMigrating} variant="outline">
+                    <DatabaseZap className="mr-2 h-5 w-5" />
+                    {isMigrating ? 'Migrando...' : 'Atualizar e Migrar Produtos'}
+                </Button>
+            )}
+            <Button onClick={() => openForm()}>
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Novo Produto
+            </Button>
+        </div>
       </div>
 
       <ScrollArea className="rounded-lg border">
