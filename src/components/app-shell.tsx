@@ -101,49 +101,48 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
         </Sheet>
         
-        <div className="flex w-full items-center">
-             <Link href="/" className="hidden items-center gap-2 font-semibold md:flex">
-                <Bot className="h-6 w-6 text-primary" />
-                <span>Pé na Areia</span>
-            </Link>
-            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6 ml-auto">
+        {/* Desktop Header */}
+        <Link href="/" className="hidden items-center gap-2 font-semibold md:flex">
+            <Bot className="h-6 w-6 text-primary" />
+            <span>Pé na Areia</span>
+        </Link>
+        <div className="ml-auto flex items-center gap-4">
+            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
                 {navigation.map(item => <NavLink key={item.name} item={item} />)}
                 {isAdmin && adminNavigation.map(item => <NavLink key={item.name} item={item} />)}
                 {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
             </nav>
             
-            <div className="flex items-center gap-4 ml-4">
-                {user && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                <Image
-                                    src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
-                                    alt={broker?.name || user.displayName || 'User Avatar'}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full"
-                                    data-ai-hint="user avatar"
-                                />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>
-                                <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
-                                    {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
-                                    {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
-                                </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                            <LogOut className="mr-2 h-4 w-4" />
-                                <span>Sair</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
-            </div>
+            {user && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                            <Image
+                                src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
+                                alt={broker?.name || user.displayName || 'User Avatar'}
+                                width={32}
+                                height={32}
+                                className="rounded-full"
+                                data-ai-hint="user avatar"
+                            />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
+                                {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                                {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                            <span>Sair</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 overflow-auto">
