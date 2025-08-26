@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
       if (currentUser) {
         setUser(currentUser);
         const brokerData = await getBroker(currentUser.uid);
@@ -77,22 +76,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login');
   };
   
-  if (loading) {
-    return (
-        <div className="flex items-center justify-center h-screen bg-background">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-        </div>
-    );
-  }
-
-  if (!user && pathname !== '/login') {
-    return null; 
-  }
-
+  const value = { user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut };
 
   return (
-    <AuthContext.Provider value={{ user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {loading ? (
+         <div className="flex items-center justify-center h-screen bg-background">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 };
