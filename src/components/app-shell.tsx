@@ -42,8 +42,7 @@ const supportNavigation = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter();
-  const { user, broker, isAdmin, signOut } = useAuth();
-
+  const { user, broker, isAdmin, signOut, loading } = useAuth(); // Use loading state
 
   const handleSignOut = async () => {
     await signOut();
@@ -54,10 +53,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-2 rounded-md font-medium transition-colors",
-        isMobile 
-          ? `px-2.5 text-lg ${pathname === item.href ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`
-          : `px-3 py-2 text-sm ${pathname === item.href ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-muted/50"}`
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+        pathname === item.href && "text-primary bg-muted",
+        isMobile ? "text-lg" : "text-sm font-medium"
       )}
     >
       <item.icon className="h-5 w-5" />
@@ -65,89 +63,124 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </Link>
   )
   
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-        
-        {/* Mobile Menu */}
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 md:hidden"
-                >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
-                </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-                <SheetHeader>
-                   <SheetTitle>
-                     <Link
-                        href="/"
-                        className="flex items-center gap-2 text-lg font-semibold mb-4"
-                    >
+  if (loading) {
+     return (
+        <div className="flex items-center justify-center h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+        </div>
+    );
+  }
+
+  const DesktopNav = () => (
+    <nav className="hidden md:flex md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
+        {navigation.map(item => <NavLink key={item.href} item={item} />)}
+        {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
+        {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
+    </nav>
+  )
+
+  const MobileNav = () => (
+     <Sheet>
+        <SheetTrigger asChild>
+            <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 md:hidden"
+            >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col">
+            <SheetHeader>
+                <SheetTitle>
+                    <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
                         <Bot className="h-6 w-6 text-primary" />
                         <span>Pé na Areia</span>
                     </Link>
-                   </SheetTitle>
-                </SheetHeader>
-                <nav className="grid gap-6 text-lg font-medium mt-4">
-                    {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                    {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                    {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
-                </nav>
-            </SheetContent>
-        </Sheet>
-        
-        {/* Desktop Header */}
-        <Link href="/" className="hidden items-center gap-2 font-semibold md:flex">
-            <Bot className="h-6 w-6 text-primary" />
-            <span>Pé na Areia</span>
-        </Link>
-        <div className="ml-auto flex items-center gap-4">
-            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
-                {navigation.map(item => <NavLink key={item.name} item={item} />)}
-                {isAdmin && adminNavigation.map(item => <NavLink key={item.name} item={item} />)}
-                {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
+                </SheetTitle>
+            </SheetHeader>
+            <nav className="grid gap-2 text-lg font-medium mt-4">
+                {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
             </nav>
-            
-            {user && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                            <Image
-                                src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
-                                alt={broker?.name || user.displayName || 'User Avatar'}
-                                width={32}
-                                height={32}
-                                className="rounded-full"
-                                data-ai-hint="user avatar"
-                            />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
-                                {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
-                                {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                        <LogOut className="mr-2 h-4 w-4" />
-                            <span>Sair</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
+        </SheetContent>
+    </Sheet>
+  )
+
+  const UserMenu = () => (
+    <>
+      {user && (
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="rounded-full">
+                      <Image
+                          src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
+                          alt={broker?.name || user.displayName || 'User Avatar'}
+                          width={32}
+                          height={32}
+                          className="rounded-full"
+                          data-ai-hint="user avatar"
+                      />
+                      <span className="sr-only">Toggle user menu</span>
+                  </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
+                          {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                          {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
+                      </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair</span>
+                  </DropdownMenuItem>
+              </DropdownMenuContent>
+          </DropdownMenu>
+      )}
+    </>
+  )
+
+  return (
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      {/* Sidebar */}
+      <div className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <Link href="/" className="flex items-center gap-2 font-semibold">
+              <Bot className="h-6 w-6 text-primary" />
+              <span className="">Pé na Areia</span>
+            </Link>
+          </div>
+          <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              {navigation.map(item => <NavLink key={item.href} item={item} />)}
+              {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
+              {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
+            </nav>
+          </div>
         </div>
-      </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 overflow-auto">
-        {children}
-      </main>
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex flex-col">
+          {/* Header */}
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <MobileNav />
+            <div className="w-full flex-1">
+              {/* Optional: Add search bar or other header content here */}
+            </div>
+            <UserMenu />
+          </header>
+          {/* Page Content */}
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto">
+            {children}
+          </main>
+      </div>
     </div>
   )
 }

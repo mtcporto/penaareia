@@ -32,10 +32,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true); // Start loading when auth state changes
       if (user) {
         setUser(user);
         const brokerData = await getBroker(user.uid);
         setBroker(brokerData);
+        // Ensure isAdmin is set only after brokerData is fetched
         setIsAdmin(brokerData?.role === 'admin');
 
         if (pathname === '/login') {
@@ -50,11 +52,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             router.push('/login');
         }
       }
-      setLoading(false);
+      setLoading(false); // Stop loading after all async operations
     });
 
     return () => unsubscribe();
-  }, [router, pathname]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const signInWithEmail = (email: string, pass: string) => {
       return signInWithEmailAndPassword(auth, email, pass);
@@ -83,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login');
   };
   
+  // This initial loading screen is important
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen">
@@ -91,9 +95,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  // Render children only when not loading and authentication check is complete.
+  // This prevents rendering AppShell with incorrect auth state.
   return (
     <AuthContext.Provider value={{ user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
