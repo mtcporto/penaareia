@@ -19,6 +19,7 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { AppShell } from '@/components/app-shell';
 import { getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/firestore-service';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -81,7 +82,8 @@ export default function ProductsPage() {
     setIsDeleteDialogOpen(true);
   }
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null) return '-';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -90,7 +92,9 @@ export default function ProductsPage() {
   
   const filteredProducts = useMemo(() => {
     return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.builder?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.location?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [products, searchTerm]);
 
@@ -100,7 +104,7 @@ export default function ProductsPage() {
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input 
-            placeholder="Buscar produto..."
+            placeholder="Buscar por nome, construtora, local..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,20 +116,28 @@ export default function ProductsPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <ScrollArea className="rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead>Preço</TableHead>
+              <TableHead>Produto</TableHead>
+              <TableHead>Construtora</TableHead>
+              <TableHead>Tamanho</TableHead>
+              <TableHead>Quartos</TableHead>
+              <TableHead>Posição</TableHead>
+              <TableHead>Valor (R$)</TableHead>
+              <TableHead>Valor m²</TableHead>
+              <TableHead>Local</TableHead>
+              <TableHead>Entrega</TableHead>
+              <TableHead>Unidade</TableHead>
+              <TableHead>Andar</TableHead>
               <TableHead className="w-[100px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
                 <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={12} className="h-24 text-center">
                         Carregando...
                     </TableCell>
                 </TableRow>
@@ -133,8 +145,16 @@ export default function ProductsPage() {
                 filteredProducts.map(product => (
                 <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.description}</TableCell>
+                    <TableCell>{product.builder}</TableCell>
+                    <TableCell>{product.size ? `${product.size} m²` : '-'}</TableCell>
+                    <TableCell>{product.rooms}</TableCell>
+                    <TableCell>{product.position}</TableCell>
                     <TableCell>{formatCurrency(product.price)}</TableCell>
+                    <TableCell>{formatCurrency(product.pricePerSqM)}</TableCell>
+                    <TableCell>{product.location}</TableCell>
+                    <TableCell>{product.deliveryDate}</TableCell>
+                    <TableCell>{product.unit}</TableCell>
+                    <TableCell>{product.floor}</TableCell>
                     <TableCell>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openForm(product)}>
@@ -149,14 +169,14 @@ export default function ProductsPage() {
                 ))
             ) : (
                 <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={12} className="h-24 text-center">
                     Nenhum produto encontrado.
                     </TableCell>
                 </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
+      </ScrollArea>
         {isFormOpen && (
             <ProductForm
                 product={selectedProduct}

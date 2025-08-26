@@ -29,6 +29,15 @@ export interface Product {
     name: string;
     description?: string;
     price: number;
+    builder?: string;
+    size?: number;
+    rooms?: string;
+    position?: string;
+    pricePerSqM?: number;
+    location?: string;
+    deliveryDate?: string;
+    unit?: string;
+    floor?: string;
 }
 
 export interface Task {
