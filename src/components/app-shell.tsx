@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import {
@@ -80,14 +82,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
-                <nav className="grid gap-6 text-lg font-medium">
-                    <Link
+                <SheetHeader>
+                   <SheetTitle>
+                     <Link
                         href="/"
                         className="flex items-center gap-2 text-lg font-semibold mb-4"
                     >
                         <Bot className="h-6 w-6 text-primary" />
                         <span>Pé na Areia</span>
                     </Link>
+                   </SheetTitle>
+                </SheetHeader>
+                <nav className="grid gap-6 text-lg font-medium mt-4">
                     {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
                     {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
                     {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
@@ -106,8 +112,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
             </nav>
             
-            {user && (
-                 <div className="flex items-center gap-4 ml-4">
+            <div className="flex items-center gap-4 ml-4">
+                {user && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -136,8 +142,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
-            )}
+                )}
+            </div>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 overflow-auto">
