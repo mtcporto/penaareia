@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { Briefcase, Building2, Users, Menu, Package, Bot, LogOut, LifeBuoy } from "lucide-react"
+import { Briefcase, Building2, Users, Menu, Package, Bot, LogOut, LifeBuoy, UserCog } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -27,13 +27,20 @@ const navigation = [
   { name: "Empresas", href: "/companies", icon: Building2 },
   { name: "Contatos", href: "/contacts", icon: Users },
   { name: "Produtos", href: "/products", icon: Package },
-  { name: "Suporte", href: "/support", icon: LifeBuoy },
+]
+
+const adminNavigation = [
+    { name: "Corretores", href: "/brokers", icon: UserCog },
+]
+
+const supportNavigation = [
+    { name: "Suporte", href: "/support", icon: LifeBuoy },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, broker, isAdmin, signOut } = useAuth();
 
 
   const handleSignOut = async () => {
@@ -80,9 +87,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Bot className="h-6 w-6 text-primary" />
                             <span>Pé na Areia</span>
                         </Link>
-                        {navigation.map(item => (
-                            <NavLink key={item.href} item={item} isMobile={true}/>
-                        ))}
+                        {navigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                        {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
+                        {supportNavigation.map(item => <NavLink key={item.href} item={item} isMobile={true}/>)}
                     </nav>
                 </SheetContent>
             </Sheet>
@@ -95,14 +102,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="ml-auto flex items-center gap-4 md:gap-2 lg:gap-4">
            <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
                 {navigation.map(item => <NavLink key={item.name} item={item} />)}
+                {isAdmin && adminNavigation.map(item => <NavLink key={item.name} item={item} />)}
+                {supportNavigation.map(item => <NavLink key={item.name} item={item} />)}
             </nav>
             {user && (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                             <Image
-                                src={user.photoURL || `https://placehold.co/32x32.png`}
-                                alt={user.displayName || 'User Avatar'}
+                                src={broker?.photoURL || user.photoURL || `https://placehold.co/32x32.png`}
+                                alt={broker?.name || user.displayName || 'User Avatar'}
                                 width={32}
                                 height={32}
                                 className="rounded-full"
@@ -113,8 +122,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user.displayName || user.email}</p>
-                                {user.displayName && user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                                <p className="text-sm font-medium leading-none">{broker?.name || user.displayName || user.email}</p>
+                                {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
+                                {broker?.role && <p className="text-xs leading-none text-muted-foreground capitalize mt-1">{broker.role}</p>}
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />

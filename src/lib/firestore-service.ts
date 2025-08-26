@@ -13,8 +13,9 @@ import {
   getDoc,
   Timestamp,
   arrayUnion,
+  setDoc,
 } from 'firebase/firestore';
-import type { Company, Contact, Deal, Product, Task, Note, Stage } from '@/types';
+import type { Company, Contact, Deal, Product, Task, Note, Stage, Broker } from '@/types';
 import { mockCompanies, mockContacts, mockDeals, mockTasks, mockNotes } from '@/data/mock-data';
 
 // Generic CRUD Functions
@@ -38,6 +39,11 @@ const addDocument = async <T extends { id?: string }>(collectionName: string, da
   return { ...data, id: docRef.id } as T;
 };
 
+const setDocument = async <T extends { id: string }>(collectionName: string, data: T): Promise<void> => {
+  const docRef = doc(db, collectionName, data.id);
+  await setDoc(docRef, data);
+};
+
 const updateDocument = async <T extends { id?: string }>(collectionName: string, id: string, data: Partial<Omit<T, 'id'>>): Promise<void> => {
   await updateDoc(doc(db, collectionName, id), data);
 };
@@ -47,13 +53,14 @@ const deleteDocument = async (collectionName: string, id: string): Promise<void>
 };
 
 
-// Specific Functions
+// Companies
 export const getCompanies = () => getCollection<Company>('companies');
 export const getCompany = (id: string) => getDocument<Company>('companies', id);
 export const addCompany = (data: Omit<Company, 'id'>) => addDocument<Company>('companies', data);
 export const updateCompany = (id: string, data: Partial<Company>) => updateDocument<Company>('companies', id, data);
 export const deleteCompany = (id: string) => deleteDocument('companies', id);
 
+// Contacts
 export const getContacts = () => getCollection<Contact>('contacts');
 export const getContact = (id: string) => getDocument<Contact>('contacts', id);
 export const getContactsByCompany = async (companyId: string): Promise<Contact[]> => {
@@ -65,12 +72,14 @@ export const addContact = (data: Omit<Contact, 'id'>) => addDocument<Contact>('c
 export const updateContact = (id: string, data: Partial<Contact>) => updateDocument<Contact>('contacts', id, data);
 export const deleteContact = (id: string) => deleteDocument('contacts', id);
 
+// Products
 export const getProducts = () => getCollection<Product>('products');
 export const getProduct = (id: string) => getDocument<Product>('products', id);
 export const addProduct = (data: Omit<Product, 'id'>) => addDocument<Product>('products', data);
 export const updateProduct = (id: string, data: Partial<Product>) => updateDocument<Product>('products', id, data);
 export const deleteProduct = (id: string) => deleteDocument('products', id);
 
+// Deals
 export const getDeals = () => getCollection<Deal>('deals');
 export const getDeal = (id: string) => getDocument<Deal>('deals', id);
 export const addDeal = (data: Omit<Deal, 'id'>) => addDocument<Deal>('deals', { ...data, tasks: [], notes: [], contactHistory: []});
@@ -86,17 +95,24 @@ export const updateDealStage = async (id: string, stage: Stage) => {
 export const deleteDeal = (id: string) => deleteDocument('deals', id);
 
 
-// Tasks are a subcollection of deals
+// Tasks (subcollection of deals)
 export const getTasks = (dealId: string) => getCollection<Task>(`deals/${dealId}/tasks`);
 export const addTask = (dealId: string, data: Omit<Task, 'id'>) => addDocument<Task>(`deals/${dealId}/tasks`, {...data, dueDate: data.dueDate ? Timestamp.fromDate(new Date(data.dueDate)) : undefined});
 export const updateTask = (dealId: string, taskId: string, data: Partial<Task>) => updateDocument<Task>(`deals/${dealId}/tasks`, taskId, {...data, dueDate: data.dueDate ? Timestamp.fromDate(new Date(data.dueDate)) : undefined});
 export const deleteTask = (dealId: string, taskId: string) => deleteDocument(`deals/${dealId}/tasks`, taskId);
 
-// Notes are a subcollection of deals
+// Notes (subcollection of deals)
 export const getNotes = (dealId: string) => getCollection<Note>(`deals/${dealId}/notes`);
 export const addNote = (dealId: string, data: Omit<Note, 'id'>) => addDocument<Note>(`deals/${dealId}/notes`, {...data, createdAt: Timestamp.fromDate(new Date())});
 export const updateNote = (dealId: string, noteId: string, data: Partial<Note>) => updateDocument<Note>(`deals/${dealId}/notes`, noteId, data);
 export const deleteNote = (dealId: string, noteId: string) => deleteDocument(`deals/${dealId}/notes`, noteId);
+
+// Brokers / Users with Roles
+export const getBrokers = () => getCollection<Broker>('brokers');
+export const getBroker = (id: string) => getDocument<Broker>('brokers', id);
+export const addBroker = (data: Broker) => setDocument<Broker>('brokers', data);
+export const updateBroker = (id: string, data: Partial<Broker>) => updateDocument<Broker>('brokers', id, data);
+export const deleteBroker = (id: string) => deleteDocument('brokers', id);
 
 // Helper to clear a collection
 const clearCollection = async (collectionName: string) => {
@@ -117,7 +133,6 @@ const parseCurrency = (currencyString: string | null): number | undefined => {
     return isNaN(value) ? undefined : value;
 }
 
-
 export const migrateProducts = async (newProductsData: any[]) => {
     console.log("Starting product migration...");
     try {
@@ -125,7 +140,7 @@ export const migrateProducts = async (newProductsData: any[]) => {
 
         const batch = writeBatch(db);
         newProductsData.forEach(item => {
-             if (item.Produto === 'TOTAL VGV') return;
+            if (item.Produto === 'TOTAL VGV') return;
             
             const newProduct: Partial<Omit<Product, 'id'>> = {
                 name: item.Produto || 'N/A',
@@ -136,7 +151,10 @@ export const migrateProducts = async (newProductsData: any[]) => {
             if (item.Tamanho) newProduct.size = item.Tamanho;
             if (item.QTOS) newProduct.rooms = item.QTOS;
             if (item.Posição) newProduct.position = item.Posição;
-            if (parseCurrency(item['mt²'])) newProduct.pricePerSqM = parseCurrency(item['mt²']);
+            
+            const pricePerSqM = parseCurrency(item['mt²']);
+            if (pricePerSqM !== undefined) newProduct.pricePerSqM = pricePerSqM;
+            
             if (item.Local) newProduct.location = item.Local;
             if (item.Entrega) newProduct.deliveryDate = item.Entrega;
             if (item.Unidade) newProduct.unit = item.Unidade;
@@ -191,20 +209,21 @@ export const seedDatabase = async () => {
             const { id, ...dealData } = deal;
             const dealDocRef = doc(db, 'deals', id);
             batch.set(dealDocRef, dealData);
-        });
 
-        console.log("Seeding tasks...");
-        mockTasks.forEach(task => {
-            const { dealId, id, dueDate, ...taskData } = task;
-            const taskDocRef = doc(db, `deals/${dealId}/tasks`, id);
-            batch.set(taskDocRef, {...taskData, dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined });
-        });
+            // Seed subcollections
+            const tasksForDeal = mockTasks.filter(t => t.dealId === id);
+            tasksForDeal.forEach(task => {
+                const { dealId, id: taskId, dueDate, ...taskData } = task;
+                const taskDocRef = doc(db, `deals/${deal.id}/tasks`, taskId);
+                batch.set(taskDocRef, {...taskData, dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined });
+            });
 
-        console.log("Seeding notes...");
-        mockNotes.forEach(note => {
-            const { dealId, id, createdAt, ...noteData } = note;
-            const noteDocRef = doc(db, `deals/${dealId}/notes`, id);
-            batch.set(noteDocRef, {...noteData, createdAt: Timestamp.fromDate(createdAt) });
+            const notesForDeal = mockNotes.filter(n => n.dealId === id);
+            notesForDeal.forEach(note => {
+                 const { dealId, id: noteId, createdAt, ...noteData } = note;
+                const noteDocRef = doc(db, `deals/${deal.id}/notes`, noteId);
+                batch.set(noteDocRef, {...noteData, createdAt: Timestamp.fromDate(createdAt) });
+            });
         });
     }
 

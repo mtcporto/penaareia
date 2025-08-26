@@ -63,3 +63,14 @@ export interface Deal {
   productId: string;
   contactHistory: string[];
 }
+
+export type UserRole = 'admin' | 'broker';
+
+export interface Broker {
+  id: string; // Corresponds to Firebase Auth UID
+  name: string;
+  email: string;
+  role: UserRole;
+  phone?: string;
+  photoURL?: string;
+}
