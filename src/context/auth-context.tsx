@@ -31,14 +31,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true); 
-      if (user) {
-        setUser(user);
-        const brokerData = await getBroker(user.uid);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const brokerData = await getBroker(currentUser.uid);
         setBroker(brokerData);
         setIsAdmin(brokerData?.role === 'admin');
-
         if (pathname === '/login') {
             router.push('/');
         }
@@ -46,7 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         setBroker(null);
         setIsAdmin(false);
-
         if (pathname !== '/login') {
             router.push('/login');
         }
@@ -73,9 +70,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    setUser(null);
+    setBroker(null);
+    setIsAdmin(false);
     router.push('/login');
   };
   
+  // While loading, show a spinner. This prevents rendering the children
+  // with an incomplete auth state.
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
@@ -84,7 +86,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Prevent rendering children until auth state is fully resolved, unless on the login page
+  // If not loading and no user, and not on the login page, it means we should redirect.
+  // Returning null prevents a flash of content before redirect.
   if (!user && pathname !== '/login') {
     return null; 
   }
@@ -92,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, broker, loading, isAdmin, signInWithEmail, createNewUser, signInWithGoogle, signOut }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

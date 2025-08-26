@@ -148,7 +148,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {allNavItems.map(item => <NavLink key={item.href} item={item} />)}
+              {mainNavigation.map(item => <NavLink key={item.href} item={item} />)}
+              {isAdmin && adminNavigation.map(item => <NavLink key={item.href} item={item} />)}
+              {supportNavigation.map(item => <NavLink key={item.href} item={item} />)}
             </nav>
           </div>
         </div>
